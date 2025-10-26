@@ -1,0 +1,41 @@
+body {
+    font-family: "Montserrat";
+    text-align: center;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Montserrat-Bold";
+  }
+  
+  p {
+    color: #8f8f8f;
+  }
+
+.big-heading {
+    font-family: "Montserrat-Black";
+    font-size: 3.5rem;
+    line-height: 1.5;
+    
+  }
+  .colored-section {
+   background-image: url('programming-background-collage.jpg');
+   background-repeat: no-repeat;
+   background-attachment: fixed;
+   background-size: cover;
+    color:#ffff;
+  }
+  #title {
+   
+    color: #ffff;
+    text-align:right;
+  }
+  
+  #title .container-fluid {
+    background-image: url('programming-background-collage.jpg');
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+    padding: 3% 15% 7%;
+  }
+  
+ 

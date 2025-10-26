@@ -1,0 +1,125 @@
+/* ===== Root Container ===== */
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+/* ===== 3D Transparent Background ===== */
+body {
+  background: radial-gradient(circle at 30% 30%, rgba(42, 183, 202, 0.35), rgba(74, 144, 226, 0.25), rgba(0, 0, 0, 0.2));
+  background-attachment: fixed;
+  color: #222; /* Dark text color */
+  font-family: "Poppins", sans-serif;
+  overflow-x: hidden;
+  perspective: 1000px;
+  margin: 0;
+  padding: 0;
+}
+
+/* ===== Navbar (Fixed and Glass Style) ===== */
+.navbar {
+  position: fixed; /* keeps navbar in place */
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.25); /* translucent white glass */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.15);
+  padding: 1rem 2rem;
+  z-index: 1000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar a {
+  color: #111; /* dark text for links */
+  text-decoration: none;
+  margin: 0 1rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.navbar a:hover {
+  color: #2AB7CA;
+}
+
+/* ===== Content Wrapper (Prevents Navbar Overlap) ===== */
+.main-content {
+  margin-top: 90px; /* prevent overlap with fixed navbar */
+  padding: 2rem;
+}
+
+/* ===== Glass Morphic Card ===== */
+.glass-card {
+  background: rgba(255, 255, 255, 0.9); /* lighter card color for contrast */
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transform-style: preserve-3d;
+  color: #222;
+  margin-bottom: 2rem;
+  padding: 2rem;
+}
+
+.glass-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* ===== Assessment Card Fix (No Movement) ===== */
+.assessment-card {
+  transition: none !important;
+  transform: none !important;
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
+}
+.assessment-card:hover {
+  transform: none !important;
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== Section Container ===== */
+.glass-section {
+  margin-top: 50px;
+  border-radius: 25px;
+  padding: 3rem;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== Background Floating Animation ===== */
+@keyframes floatBG {
+  from {
+    transform: translateY(0px);
+  }
+  to {
+    transform: translateY(-20px);
+  }
+}
+
+/* ===== Logo ===== */
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+
+/* ===== Cards and Misc ===== */
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #444;
+}
