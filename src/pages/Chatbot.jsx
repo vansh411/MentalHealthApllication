@@ -5,12 +5,35 @@ function Chatbot() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input) return;
-    setMessages([...messages, { sender: "user", text: input }]);
-    setMessages(prev => [...prev, { sender: "bot", text: "Thanks for sharing. I'm here to listen!" }]);
+
+    const userMessage = { sender: "user", text: input };
+    setMessages(prev => [...prev, userMessage]);
     setInput("");
+
+    try {
+      setLoading(true);
+
+      const response = await fetch("http://localhost:8080/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: input }),
+      });
+
+      const data = await response.json();
+
+      const botMessage = { sender: "bot", text: data.reply };
+      setMessages(prev => [...prev, botMessage]);
+    } catch (error) {
+      console.error("Chatbot error:", error);
+      const botMessage = { sender: "bot", text: "Sorry, I couldn't process your message." };
+      setMessages(prev => [...prev, botMessage]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -21,7 +44,16 @@ function Chatbot() {
             <div style={{ marginBottom: "10px" }}>
               {messages.map((msg, idx) => (
                 <div key={idx} style={{ textAlign: msg.sender === "user" ? "right" : "left" }}>
-                  <span style={{ display: "inline-block", padding: "5px 10px", borderRadius: "15px", backgroundColor: msg.sender === "user" ? "#2AB7CA" : "#E2E2E2", color: msg.sender === "user" ? "white" : "black", marginBottom: "5px" }}>
+                  <span
+                    style={{
+                      display: "inline-block",
+                      padding: "5px 10px",
+                      borderRadius: "15px",
+                      backgroundColor: msg.sender === "user" ? "#2AB7CA" : "#E2E2E2",
+                      color: msg.sender === "user" ? "white" : "black",
+                      marginBottom: "5px",
+                    }}
+                  >
                     {msg.text}
                   </span>
                 </div>
@@ -34,11 +66,18 @@ function Chatbot() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
             />
-            <Button className="mt-2 w-100" onClick={handleSend}>Send</Button>
+            <Button className="mt-2 w-100" onClick={handleSend} disabled={loading}>
+              {loading ? "Sending..." : "Send"}
+            </Button>
           </Card.Body>
         </Card>
       )}
-      <Button onClick={() => setOpen(!open)} style={{ borderRadius: "50%", width: "60px", height: "60px" }}>💬</Button>
+      <Button
+        onClick={() => setOpen(!open)}
+        style={{ borderRadius: "50%", width: "60px", height: "60px" }}
+      >
+        💬
+      </Button>
     </div>
   );
 }

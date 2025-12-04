@@ -1,9 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Container, Navbar, Nav, Button, Row, Col, Card } from "react-bootstrap";
+import {
+  Container,
+  Navbar,
+  Nav,
+  Button,
+  Row,
+  Col,
+  Card,
+  Modal,
+} from "react-bootstrap";
 import { useSpring, animated } from "@react-spring/web";
 
-function FeatureCard({ icon, title, text, delay }) {
+// ----------------------------------------
+// Feature Card Component
+// ----------------------------------------
+function FeatureCard({ icon, title, text, delay, onClick }) {
   const style = useSpring({
     from: { opacity: 0, transform: "translateY(20px)" },
     to: { opacity: 1, transform: "translateY(0px)" },
@@ -15,18 +27,21 @@ function FeatureCard({ icon, title, text, delay }) {
       <Card
         style={{
           background: "#fff",
-          borderRadius: "15px",
-          boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+          borderRadius: "18px",
+          boxShadow: "0 12px 28px rgba(0,0,0,0.08)",
           padding: "2rem 1rem",
           textAlign: "center",
-          transition: "transform 0.3s, box-shadow 0.3s",
+          transition: "0.3s",
+          cursor: onClick ? "pointer" : "default",
         }}
-        onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-5px)")}
-        onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0px)")}
+        onClick={onClick}
+        className="hover-up"
       >
         <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>{icon}</div>
         <Card.Body>
-          <Card.Title style={{ fontWeight: "700", color: "#222" }}>{title}</Card.Title>
+          <Card.Title style={{ fontWeight: "700", color: "#222" }}>
+            {title}
+          </Card.Title>
           <Card.Text style={{ color: "#555" }}>{text}</Card.Text>
         </Card.Body>
       </Card>
@@ -34,12 +49,70 @@ function FeatureCard({ icon, title, text, delay }) {
   );
 }
 
+// ----------------------------------------
+// Assessment Modal
+// ----------------------------------------
+function AssessmentModal({ show, handleClose, handleStart }) {
+  return (
+    <Modal show={show} onHide={handleClose} centered size="md">
+      <Modal.Body
+        style={{
+          padding: "2rem",
+          borderRadius: "15px",
+          textAlign: "center",
+        }}
+      >
+        <h3 style={{ fontWeight: "700", marginBottom: "10px" }}>
+          Take Your Assessment?
+        </h3>
+        <p style={{ color: "#666", fontSize: "1.05rem" }}>
+          This quick assessment helps us tailor your mental wellness experience.
+          You can choose to do it now or later.
+        </p>
+
+        <div className="d-flex justify-content-center mt-4 gap-3">
+          <Button
+            style={{
+              padding: "0.7rem 1.8rem",
+              borderRadius: "12px",
+              border: "none",
+              backgroundColor: "#2ecc71",
+              fontWeight: "600",
+            }}
+            onClick={handleStart}
+          >
+            Start Now
+          </Button>
+
+          <Button
+            style={{
+              padding: "0.7rem 1.8rem",
+              borderRadius: "12px",
+              background: "#eee",
+              color: "#555",
+              fontWeight: "600",
+              border: "none",
+            }}
+            onClick={handleClose}
+          >
+            Maybe Later
+          </Button>
+        </div>
+      </Modal.Body>
+    </Modal>
+  );
+}
+
+// ----------------------------------------
+// MAIN FRONT PAGE
+// ----------------------------------------
 function Frontpage() {
   const navigate = useNavigate();
   const loggedInUser = localStorage.getItem("loggedInUser");
   const users = JSON.parse(localStorage.getItem("users")) || {};
-  const assessmentCompleted = JSON.parse(localStorage.getItem("assessmentCompleted")) || {};
+  const [showAssessmentModal, setShowAssessmentModal] = useState(false);
 
+  // Get initials
   let initials = "";
   if (loggedInUser && users[loggedInUser]) {
     const email = users[loggedInUser].email;
@@ -50,12 +123,17 @@ function Frontpage() {
       .join("");
   }
 
-  const handleAssessment = () => {
-    if (!loggedInUser) navigate("/signin");
-    else if (assessmentCompleted[loggedInUser]) navigate("/userhome");
-    else navigate("/questions");
+  const openAssessmentModal = () => {
+    if (!loggedInUser) return navigate("/signin");
+    setShowAssessmentModal(true);
   };
 
+  const handleStartAssessment = () => {
+    setShowAssessmentModal(false);
+    navigate("/questions");
+  };
+
+  // Quotes
   const quotes = [
     "Your mental health is a priority, not a luxury.",
     "It’s okay to not be okay — what matters is you’re trying.",
@@ -64,39 +142,24 @@ function Frontpage() {
     "Even the darkest night will end, and the sun will rise again.",
   ];
   const [currentQuote, setCurrentQuote] = useState(0);
+
   useEffect(() => {
-    const interval = setInterval(() => setCurrentQuote((prev) => (prev + 1) % quotes.length), 5000);
+    const interval = setInterval(
+      () => setCurrentQuote((prev) => (prev + 1) % quotes.length),
+      5000
+    );
     return () => clearInterval(interval);
   }, []);
 
-  const blogs = [
-    {
-      title: "How Social Media Affects Mental Health",
-      text: "Learn how to maintain healthy boundaries online and avoid comparison traps.",
-      img: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b",
-    },
-    {
-      title: "Building Digital Balance",
-      text: "Discover simple steps to balance your screen time and mental peace.",
-      img: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4",
-    },
-    {
-      title: "The Power of Mindful Scrolling",
-      text: "Turn your social media feed into a space of positivity and inspiration.",
-      img: "https://images.unsplash.com/photo-1525182008055-f88b95ff7980",
-    },
-  ];
-
-  const books = [
-    { title: "The Anxiety and Phobia Workbook", author: "Edmund J. Bourne", link: "#" },
-    { title: "Feeling Good: The New Mood Therapy", author: "David D. Burns", link: "#" },
-    { title: "Lost Connections", author: "Johann Hari", link: "#" },
-    { title: "The Happiness Trap", author: "Russ Harris", link: "#" },
-    { title: "Mind Over Mood", author: "Dennis Greenberger", link: "#" },
-  ];
-
   return (
-    <div style={{ fontFamily: "Poppins, sans-serif", background: "#F9FAFB", minHeight: "100vh", color: "#222" }}>
+    <div
+      style={{
+        fontFamily: "Poppins, sans-serif",
+        background: "#F4F7FA",
+        minHeight: "100vh",
+        color: "#222",
+      }}
+    >
       {/* Navbar */}
       <Navbar
         expand="lg"
@@ -104,24 +167,27 @@ function Frontpage() {
           position: "sticky",
           top: 0,
           zIndex: 999,
-          background: "#2C3E50",
-          boxShadow: "0 2px 12px rgba(0,0,0,0.1)",
-          padding: "0.8rem 2rem",
+          background: "linear-gradient(90deg, #2C3E50, #1A252F, #2C3E50)",
+          padding: "0.9rem 2rem",
         }}
       >
         <Container>
-          <Navbar.Brand as={Link} to="/" style={{ fontWeight: "bold", color: "#fff", fontSize: "1.4rem" }}>
+          <Navbar.Brand
+            as={Link}
+            to="/"
+            style={{ fontWeight: "bold", color: "#fff", fontSize: "1.5rem" }}
+          >
             MindCare
           </Navbar.Brand>
-          <Navbar.Toggle aria-controls="navbarScroll" />
-          <Navbar.Collapse id="navbarScroll" className="justify-content-end">
+          <Navbar.Toggle />
+          <Navbar.Collapse className="justify-content-end">
             <Nav>
               {!loggedInUser ? (
                 <>
-                  <Nav.Link as={Link} to="/signin" style={{ color: "#fff", fontWeight: 500 }}>
+                  <Nav.Link as={Link} to="/signin" style={{ color: "#fff" }}>
                     Login
                   </Nav.Link>
-                  <Nav.Link as={Link} to="/createaccount" style={{ color: "#fff", fontWeight: 500 }}>
+                  <Nav.Link as={Link} to="/createaccount" style={{ color: "#fff" }}>
                     Sign Up
                   </Nav.Link>
                 </>
@@ -129,16 +195,16 @@ function Frontpage() {
                 <div
                   onClick={() => navigate("/profile")}
                   style={{
-                    backgroundColor: "#28A745",
+                    backgroundColor: "#2ecc71",
                     color: "#fff",
                     borderRadius: "50%",
                     width: "45px",
                     height: "45px",
-                    lineHeight: "45px",
-                    textAlign: "center",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                     cursor: "pointer",
-                    fontWeight: "bold",
-                    fontSize: "18px",
+                    fontWeight: "700",
                     marginLeft: "10px",
                   }}
                 >
@@ -150,82 +216,88 @@ function Frontpage() {
         </Container>
       </Navbar>
 
-      {/* Hero Section */}
-      <div style={{ textAlign: "center", padding: "80px 5% 50px 5%" }}>
+      {/* HERO */}
+      <div style={{ textAlign: "center", padding: "80px 5%" }}>
         <Card
           style={{
-            background: "linear-gradient(135deg, #5DADE2, #48C9B0)",
+            background: "linear-gradient(135deg, #6DD5FA, #2980B9)",
             color: "#fff",
-            borderRadius: "20px",
-            maxWidth: "720px",
+            borderRadius: "25px",
+            maxWidth: "760px",
             margin: "0 auto",
-            padding: "3rem 2rem",
-            boxShadow: "0 12px 30px rgba(0,0,0,0.15)",
-            transition: "transform 0.3s",
+            padding: "3.2rem 2rem",
+            boxShadow: "0 18px 40px rgba(0,0,0,0.2)",
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
-          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+          className="hover-scale"
         >
-          <h1 style={{ fontSize: "2.8rem", fontWeight: "700" }}>Your Mental Health Companion</h1>
-          <p style={{ fontSize: "1.1rem", marginTop: "1rem" }}>
-            Talk to a friendly chatbot, track your mood, and get personalized insights.
+          <h1 style={{ fontWeight: "800", fontSize: "2.9rem" }}>
+            Your Mental Health Companion
+          </h1>
+          <p
+            style={{
+              fontSize: "1.15rem",
+              marginTop: "1rem",
+              opacity: 0.95,
+            }}
+          >
+            Chat with an empathetic AI, track your mood, and gain helpful insights.
           </p>
           <Button
-            onClick={handleAssessment}
             style={{
-              backgroundColor: "#28A745",
-              color: "#fff",
-              border: "none",
+              marginTop: "1.7rem",
               padding: "0.9rem 2.2rem",
-              fontSize: "1.2rem",
-              fontWeight: "700",
-              marginTop: "1.5rem",
+              backgroundColor: "#2ecc71",
+              border: "none",
               borderRadius: "12px",
-              boxShadow: "0 6px 18px rgba(0,0,0,0.2)",
+              fontWeight: "700",
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "#218838";
-              e.currentTarget.style.transform = "scale(1.05)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "#28A745";
-              e.currentTarget.style.transform = "scale(1)";
-            }}
+            onClick={openAssessmentModal}
           >
             Take Assessment
           </Button>
         </Card>
 
-        {/* Quote */}
         <Card
           style={{
             marginTop: "25px",
             maxWidth: "650px",
-            marginLeft: "auto",
-            marginRight: "auto",
+            margin: "25px auto",
             padding: "1rem 2rem",
             borderRadius: "15px",
-            background: "#FFF",
-            color: "#222",
+            background: "#fff",
             boxShadow: "0 6px 20px rgba(0,0,0,0.08)",
             fontStyle: "italic",
-            fontSize: "1.05rem",
           }}
         >
           “{quotes[currentQuote]}”
         </Card>
       </div>
 
-      {/* Features */}
-      <Container className="py-5">
-        <h2 className="text-center mb-5" style={{ fontWeight: "700", color: "#222" }}>
+      {/* FEATURES */}
+      <Container className="pb-5">
+        <h2 className="text-center mb-5" style={{ fontWeight: "700" }}>
           Features
         </h2>
         <Row className="g-4">
           {[
-            { icon: "🤖", title: "AI Chatbot", text: "Talk with a human-like chatbot that listens and responds with empathy." },
-            { icon: "😊", title: "Mood Tracker", text: "Track your daily emotions and monitor mental health patterns over time." },
-            { icon: "📊", title: "Personalized Reports", text: "Get weekly summaries with insights and recommendations for your wellbeing." },
+            {
+              icon: "🤖",
+              title: "AI Chatbot",
+              text: "Talk with a human-like chatbot that listens with empathy.",
+              onClick: () => window.open("http://localhost:8501", "_blank"),
+            },
+            {
+              icon: "😊",
+              title: "Mood Tracker",
+              text: "Track your emotions and discover your patterns.",
+              onClick: null,
+            },
+            {
+              icon: "📊",
+              title: "Insight Reports",
+              text: "Get personalized weekly summaries for your wellbeing.",
+              onClick: null,
+            },
           ].map((f, i) => (
             <Col md={4} key={i}>
               <FeatureCard {...f} delay={i * 200} />
@@ -234,92 +306,24 @@ function Frontpage() {
         </Row>
       </Container>
 
-      {/* Blogs */}
-      <Container className="pb-5">
-        <h2 className="text-center mb-4" style={{ fontWeight: "700", color: "#222" }}>
-          Mental Health Blogs
-        </h2>
-        <Row className="g-4">
-          {blogs.map((blog, i) => (
-            <Col md={4} key={i}>
-              <Card style={{ borderRadius: "15px", overflow: "hidden", boxShadow: "0 8px 20px rgba(0,0,0,0.08)" }}>
-                <Card.Img src={blog.img} />
-                <Card.Body>
-                  <Card.Title style={{ fontWeight: "700", color: "#222" }}>{blog.title}</Card.Title>
-                  <Card.Text style={{ color: "#555" }}>{blog.text}</Card.Text>
-                  <Button
-                    style={{
-                      borderRadius: "10px",
-                      fontWeight: "700",
-                      backgroundColor: "#48C9B0",
-                      border: "none",
-                      color: "#fff",
-                      padding: "0.5rem 1rem",
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#3CB0A5")}
-                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#48C9B0")}
-                  >
-                    Read More
-                  </Button>
-                </Card.Body>
-              </Card>
-            </Col>
-          ))}
-        </Row>
-      </Container>
-
-      {/* Book Recommendations */}
-      <Container className="pb-5">
-        <h2 className="text-center mb-4" style={{ fontWeight: "700", color: "#222" }}>
-          Recommended Books
-        </h2>
-        <Row className="g-4">
-          {books.map((book, i) => (
-            <Col md={4} key={i}>
-              <Card style={{ borderRadius: "15px", boxShadow: "0 6px 20px rgba(0,0,0,0.08)", padding: "1.5rem" }}>
-                <Card.Body>
-                  <Card.Title style={{ fontWeight: "700" }}>{book.title}</Card.Title>
-                  <Card.Text style={{ color: "#555", marginBottom: "0.5rem" }}>{book.author}</Card.Text>
-                  <Button
-                    as="a"
-                    href={book.link}
-                    target="_blank"
-                    style={{
-                      borderRadius: "10px",
-                      fontWeight: "700",
-                      backgroundColor: "#5DADE2",
-                      border: "none",
-                      color: "#fff",
-                      padding: "0.5rem 1rem",
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#4A90D9")}
-                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#5DADE2")}
-                  >
-                    Learn More
-                  </Button>
-                </Card.Body>
-              </Card>
-            </Col>
-          ))}
-        </Row>
-      </Container>
-
-      {/* Footer */}
+      {/* FOOTER */}
       <footer
         style={{
-          backgroundColor: "#F1F3F6",
-          color: "#222",
+          background: "#EEF1F4",
+          padding: "1.2rem",
           textAlign: "center",
-          padding: "1rem",
-          borderTop: "1px solid #ccc",
+          borderTop: "1px solid #ddd",
         }}
       >
-        <Container>
-          <p>&copy; {new Date().getFullYear()} MindCare. All rights reserved.</p>
-        </Container>
+        <p>© {new Date().getFullYear()} MindCare. All rights reserved.</p>
       </footer>
+
+      {/* Modal */}
+      <AssessmentModal
+        show={showAssessmentModal}
+        handleClose={() => setShowAssessmentModal(false)}
+        handleStart={handleStartAssessment}
+      />
     </div>
   );
 }

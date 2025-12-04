@@ -1,112 +1,215 @@
-// src/pages/UserHome.jsx
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Container, Navbar, Nav, Card, Row, Col } from "react-bootstrap";
-import { Line } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  Title,
-  Tooltip,
-  Legend,
-  LineElement,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-} from "chart.js";
+import { motion } from "framer-motion";
+import { Container, Navbar, Nav, Card, Row, Col, Button, Spinner } from "react-bootstrap";
 
-ChartJS.register(Title, Tooltip, Legend, LineElement, CategoryScale, LinearScale, PointElement);
-
-const UserHome = () => {
+export default function UserHome() {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user"));
+  const storedUser = localStorage.getItem("loggedInUser");
+  const user = storedUser ? { email: storedUser } : null;
 
-const [verdict, setVerdict] = React.useState("");
+  const [verdict, setVerdict] = useState("");
+  const [nearbyTherapy, setNearbyTherapy] = useState([]);
+  const [treatmentPlan, setTreatmentPlan] = useState([]);
+  const [loadingCentres, setLoadingCentres] = useState(false);
+  const [loadingPlan, setLoadingPlan] = useState(false);
+  const [geoError, setGeoError] = useState("");
 
-useEffect(() => {
-  const storedVerdict = localStorage.getItem("verdict");
-  if (storedVerdict) setVerdict(storedVerdict);
-}, []);
+  useEffect(() => {
+    const storedVerdict = localStorage.getItem("verdict");
+    if (storedVerdict) setVerdict(storedVerdict);
+  }, []);
 
+  useEffect(() => {
+    if (!verdict) return;
+    const fetchPlan = async () => {
+      setLoadingPlan(true);
+      try {
+        const res = await fetch("http://localhost:8080/treatment-plan", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ condition: verdict }),
+        });
+        const data = await res.json();
+        setTreatmentPlan(res.ok ? data.plan || [] : []);
+      } catch {
+        setTreatmentPlan([]);
+      } finally {
+        setLoadingPlan(false);
+      }
+    };
+    fetchPlan();
+  }, [verdict]);
 
-  // Dummy chart data for mood tracking
-  const data = {
-    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-    datasets: [
-      {
-        label: "Mood Level",
-        data: [3, 4, 2, 5, 4, 3, 4],
-        borderColor: "#2AB7CA",
-        backgroundColor: "#88D498",
-        tension: 0.4,
-      },
-    ],
+  const fetchNearbyFromBackend = async (lat, lng) => {
+    setLoadingCentres(true);
+    setGeoError("");
+    try {
+      const res = await fetch("http://localhost:8080/nearby-centres", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lat, lng, radius: 5000 }),
+      });
+      const data = await res.json();
+      setNearbyTherapy(res.ok ? data.centres || [] : []);
+      if (!res.ok) setGeoError("Server error fetching centres.");
+    } catch {
+      setGeoError("Failed to fetch nearby centres.");
+    } finally {
+      setLoadingCentres(false);
+    }
+  };
+
+  const handleFindCentres = () => {
+    if (!navigator.geolocation) {
+      setGeoError("Geolocation is not supported by your browser.");
+      return;
+    }
+    setGeoError("");
+    setLoadingCentres(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => fetchNearbyFromBackend(position.coords.latitude, position.coords.longitude),
+      () => { setGeoError("Permission denied or unavailable."); setLoadingCentres(false); },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 15 },
+    enter: { opacity: 1, y: 0 },
+    hover: { scale: 1.02, boxShadow: "0 15px 35px rgba(0,0,0,0.08)" },
   };
 
   return (
-    <>
-      <Navbar bg="light" expand="lg" className="shadow-sm">
+    <div style={{ minHeight: "100vh", background: "#eef2f5", fontFamily: "'Inter', sans-serif" }}>
+      {/* NAVBAR */}
+      <Navbar expand="lg" style={{ background: "#ffffff", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
         <Container>
-          <Navbar.Brand>User Dashboard</Navbar.Brand>
-          <Navbar.Toggle aria-controls="navbarScroll" />
-          <Navbar.Collapse id="navbarScroll" className="justify-content-end">
-            <Nav>
-              <Nav.Link onClick={() => navigate("/profile")}>Profile</Nav.Link>
-              <Nav.Link onClick={() => {
-                localStorage.removeItem("user");
-                navigate("/");
-              }}>Logout</Nav.Link>
-            </Nav>
-          </Navbar.Collapse>
+          <Navbar.Brand style={{ fontWeight: 700, fontSize: "1.5rem", color: "#2c3e50" }}>MindCare</Navbar.Brand>
+          <Nav className="ms-auto d-flex gap-2">
+            <Button variant="outline-secondary" size="sm" onClick={() => navigate("/profile")}>Profile</Button>
+            <Button variant="primary" size="sm" onClick={() => navigate("/")}>Logout</Button>
+          </Nav>
         </Container>
       </Navbar>
 
-      <Container className="py-4">
-        <h2>Welcome, {user?.email || "Guest"}!</h2>
-        <p>Here's your weekly mood summary:</p>
-
-        <Card className="shadow-sm p-3 mb-4">
-          <Line data={data} />
-        </Card>
-
-        <Card className="p-3 shadow-sm mt-4">
-            <Card.Title>Your Mental Health Verdict</Card.Title>
-            <Card.Text>
-              {verdict ? verdict : "No assessment yet. Please complete your first test."}
-            </Card.Text>
-        </Card>
-
+      <Container className="py-5">
+        {/* GREETING */}
+        <Row className="mb-5">
+          <Col>
+            <h1 style={{ fontWeight: 700, color: "#2c3e50" }}>Hello, {user?.email?.split("@")[0] || "Friend"} </h1>
+            <p style={{ color: "#7f8c8d" }}>Here’s your personalized mental wellness overview.</p>
+          </Col>
+        </Row>
 
         <Row className="g-4">
+          {/* VERDICT CARD */}
           <Col md={6}>
-            <Card className="p-3 shadow-sm">
-              <Card.Title>Take New Assessment</Card.Title>
-              <Card.Text>
-                Answer a new set of questions to track your mental health.
-              </Card.Text>
-              <Card.Footer>
-                <button className="btn btn-primary" onClick={() => navigate("/questions")}>
-                  Start Assessment
-                </button>
-              </Card.Footer>
-            </Card>
+            <motion.div initial="hidden" animate="enter" whileHover="hover" variants={cardVariants} transition={{ duration: 0.4 }}>
+              <Card style={{
+                borderRadius: 20,
+                padding: "30px",
+                background: "#ffffff",
+                boxShadow: "0 10px 30px rgba(0,0,0,0.05)"
+              }}>
+                <h4 style={{ fontWeight: 700, color: "#34495e" }}>Assessment Verdict</h4>
+                <p style={{ color: "#7f8c8d", marginTop: 12 }}>
+                  {verdict || "Take an assessment to get personalized guidance."}
+                </p>
+                <Button variant="primary" style={{ borderRadius: 8, marginTop: 15 }} onClick={() => navigate("/questions")}>Take/Retake Assessment</Button>
+              </Card>
+            </motion.div>
           </Col>
+
+          {/* QUICK ACTIONS CARD */}
           <Col md={6}>
-            <Card className="p-3 shadow-sm">
-              <Card.Title>View Reports</Card.Title>
-              <Card.Text>
-                Access personalized reports and insights based on previous assessments.
-              </Card.Text>
-              <Card.Footer>
-                <button className="btn btn-success" onClick={() => alert("Feature coming soon!")}>
-                  View Reports
-                </button>
-              </Card.Footer>
-            </Card>
+            <motion.div initial="hidden" animate="enter" whileHover="hover" variants={cardVariants} transition={{ duration: 0.45 }}>
+              <Card style={{
+                borderRadius: 20,
+                padding: "30px",
+                background: "#ffffff",
+                boxShadow: "0 10px 30px rgba(0,0,0,0.05)"
+              }}>
+                <h4 style={{ fontWeight: 700, color: "#34495e" }}>Quick Actions</h4>
+                <div className="d-flex flex-column gap-3 mt-3">
+                 
+                  <Button variant="outline-info" style={{ borderRadius: 10 }} onClick={() => window.open("http://localhost:8501", "_blank")}> AI Counselor Chat</Button>
+                  <Button variant="outline-success" style={{ borderRadius: 10 }} onClick={() => navigate("/chat")}> Connect with Peers</Button>
+                </div>
+              </Card>
+            </motion.div>
+          </Col>
+
+          {/* TREATMENT PLAN */}
+          <Col md={12}>
+            <motion.div initial="hidden" animate="enter" whileHover="hover" variants={cardVariants} transition={{ duration: 0.5 }}>
+              <Card style={{
+                borderRadius: 20,
+                padding: "30px",
+                background: "#ffffff",
+                boxShadow: "0 10px 30px rgba(0,0,0,0.05)"
+              }}>
+                <h4 style={{ fontWeight: 700, color: "#34495e" }}>Treatment Plan</h4>
+                {loadingPlan ? (
+                  <Spinner animation="border" size="sm" className="mt-3" />
+                ) : treatmentPlan.length ? (
+                  <ul style={{ marginTop: 15, paddingLeft: 20 }}>
+                    {treatmentPlan.map((step, idx) => <li key={idx} style={{ marginBottom: 8 }}>{step}</li>)}
+                  </ul>
+                ) : (
+                  <p style={{ color: "#7f8c8d", marginTop: 12 }}>No plan available. Complete your assessment first.</p>
+                )}
+              </Card>
+            </motion.div>
+          </Col>
+
+          {/* NEARBY CENTRES */}
+          <Col md={12}>
+            <motion.div initial="hidden" animate="enter" whileHover="hover" variants={cardVariants} transition={{ duration: 0.55 }}>
+              <Card style={{
+                borderRadius: 20,
+                padding: "30px",
+                background: "#ffffff",
+                boxShadow: "0 10px 30px rgba(0,0,0,0.05)"
+              }}>
+                <div className="d-flex justify-content-between align-items-center">
+                  <h4 style={{ fontWeight: 700, color: "#34495e" }}>Nearby Therapy Centers</h4>
+                  <Button variant="primary" size="sm" onClick={handleFindCentres} disabled={loadingCentres}>
+                    {loadingCentres ? (<><Spinner animation="border" size="sm" /> Searching...</>) : "Find Nearby Centres"}
+                  </Button>
+                </div>
+
+                {geoError && <p style={{ color: "red", marginTop: 10 }}>{geoError}</p>}
+
+                <Row className="mt-4 g-3">
+                  {nearbyTherapy.length ? nearbyTherapy.map((center, idx) => (
+                    <Col md={4} key={idx}>
+                      <Card style={{
+                        borderRadius: 15,
+                        padding: "20px",
+                        background: "#f9fafc",
+                        boxShadow: "0 8px 20px rgba(0,0,0,0.05)"
+                      }}>
+                        <h6 style={{ fontWeight: 700, color: "#2c3e50" }}>{center.name}</h6>
+                        <p style={{ color: "#7f8c8d", fontSize: 13 }}>{center.address}</p>
+                        <div className="d-flex justify-content-between align-items-center mt-2">
+                          <span style={{ fontSize: 13 }}>{center.rating ? `★ ${center.rating}` : "No rating"}</span>
+                          <Button variant="info" size="sm" style={{ borderRadius: 6 }}
+                            onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(center.name + " " + (center.address || ""))}`, "_blank")}>
+                            View Map
+                          </Button>
+                        </div>
+                      </Card>
+                    </Col>
+                  )) : (
+                    <p style={{ color: "#7f8c8d" }}>Click "Find Nearby Centres" to search.</p>
+                  )}
+                </Row>
+              </Card>
+            </motion.div>
           </Col>
         </Row>
       </Container>
-    </>
+    </div>
   );
-};
-
-export default UserHome;
+}
