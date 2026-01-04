@@ -9,6 +9,9 @@ export default function UserHome() {
   const user = storedUser ? { email: storedUser } : null;
 
   const [verdict, setVerdict] = useState("");
+  const [conditionInfo, setConditionInfo] = useState(null);
+  const [loadingInfo, setLoadingInfo] = useState(false);
+
   const [nearbyTherapy, setNearbyTherapy] = useState([]);
   const [treatmentPlan, setTreatmentPlan] = useState([]);
   const [loadingCentres, setLoadingCentres] = useState(false);
@@ -20,27 +23,60 @@ export default function UserHome() {
     if (storedVerdict) setVerdict(storedVerdict);
   }, []);
 
-  useEffect(() => {
-    if (!verdict) return;
-    const fetchPlan = async () => {
-      setLoadingPlan(true);
-      try {
-        const res = await fetch("http://localhost:8080/treatment-plan", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ condition: verdict }),
-        });
-        const data = await res.json();
-        setTreatmentPlan(res.ok ? data.plan || [] : []);
-      } catch {
-        setTreatmentPlan([]);
-      } finally {
-        setLoadingPlan(false);
-      }
-    };
-    fetchPlan();
-  }, [verdict]);
+  // Fetch treatment plan
+ useEffect(() => {
+  const storedCondition = localStorage.getItem("condition");
+  if (!storedCondition) return;
 
+  const fetchPlan = async () => {
+    setLoadingPlan(true);
+    try {
+      const res = await fetch("http://localhost:8080/treatment-plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ condition: storedCondition }),
+      });
+      const data = await res.json();
+      setTreatmentPlan(res.ok ? data.plan || [] : []);
+    } catch {
+      setTreatmentPlan([]);
+    } finally {
+      setLoadingPlan(false);
+    }
+  };
+
+  fetchPlan();
+}, [verdict]);
+
+
+  // Fetch condition info
+ // Fetch condition info
+useEffect(() => {
+  const storedCondition = localStorage.getItem("condition");
+  if (!storedCondition) return;
+
+  const fetchConditionInfo = async () => {
+    setLoadingInfo(true);
+    try {
+      const res = await fetch("http://localhost:8080/condition-info", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ condition: storedCondition }),
+      });
+      const data = await res.json();
+      setConditionInfo(res.ok ? data : null);
+    } catch (err) {
+      setConditionInfo(null);
+    } finally {
+      setLoadingInfo(false);
+    }
+  };
+
+  fetchConditionInfo();
+}, [verdict]);
+
+
+  // Fetch nearby centres
   const fetchNearbyFromBackend = async (lat, lng) => {
     setLoadingCentres(true);
     setGeoError("");
@@ -68,9 +104,13 @@ export default function UserHome() {
     setGeoError("");
     setLoadingCentres(true);
     navigator.geolocation.getCurrentPosition(
-      (position) => fetchNearbyFromBackend(position.coords.latitude, position.coords.longitude),
-      () => { setGeoError("Permission denied or unavailable."); setLoadingCentres(false); },
-      { enableHighAccuracy: true, timeout: 10000 }
+      (position) =>
+        fetchNearbyFromBackend(position.coords.latitude, position.coords.longitude),
+      () => {
+        setGeoError("Permission denied or unavailable.");
+        setLoadingCentres(false);
+      },
+      { enableHighAccuracy: true, timeout: 30000 }
     );
   };
 
@@ -106,12 +146,7 @@ export default function UserHome() {
           {/* VERDICT CARD */}
           <Col md={6}>
             <motion.div initial="hidden" animate="enter" whileHover="hover" variants={cardVariants} transition={{ duration: 0.4 }}>
-              <Card style={{
-                borderRadius: 20,
-                padding: "30px",
-                background: "#ffffff",
-                boxShadow: "0 10px 30px rgba(0,0,0,0.05)"
-              }}>
+              <Card style={{ borderRadius: 20, padding: "30px", background: "#ffffff", boxShadow: "0 10px 30px rgba(0,0,0,0.05)" }}>
                 <h4 style={{ fontWeight: 700, color: "#34495e" }}>Assessment Verdict</h4>
                 <p style={{ color: "#7f8c8d", marginTop: 12 }}>
                   {verdict || "Take an assessment to get personalized guidance."}
@@ -121,18 +156,35 @@ export default function UserHome() {
             </motion.div>
           </Col>
 
+          {/* CONDITION INFO CARD */}
+          {verdict && (
+            <Col md={6}>
+              <motion.div initial="hidden" animate="enter" whileHover="hover" variants={cardVariants} transition={{ duration: 0.45 }}>
+                <Card style={{ borderRadius: 20, padding: "30px", background: "#ffffff", boxShadow: "0 10px 30px rgba(0,0,0,0.05)" }}>
+                  <h4 style={{ fontWeight: 700, color: "#34495e" }}>About {verdict}</h4>
+                  {loadingInfo ? (
+                    <Spinner animation="border" size="sm" className="mt-3" />
+                  ) : conditionInfo ? (
+                    <div style={{ marginTop: 15 }}>
+                      <p><strong>Description:</strong> {conditionInfo.description}</p>
+                      {conditionInfo.causes?.length > 0 && <p><strong>Causes:</strong> {conditionInfo.causes.join(", ")}</p>}
+                      {conditionInfo.effects?.length > 0 && <p><strong>Effects:</strong> {conditionInfo.effects.join(", ")}</p>}
+                      {conditionInfo.commonEmotions?.length > 0 && <p><strong>Common Emotions:</strong> {conditionInfo.commonEmotions.join(", ")}</p>}
+                    </div>
+                  ) : (
+                    <p style={{ color: "#7f8c8d", marginTop: 12 }}>No information available.</p>
+                  )}
+                </Card>
+              </motion.div>
+            </Col>
+          )}
+
           {/* QUICK ACTIONS CARD */}
           <Col md={6}>
             <motion.div initial="hidden" animate="enter" whileHover="hover" variants={cardVariants} transition={{ duration: 0.45 }}>
-              <Card style={{
-                borderRadius: 20,
-                padding: "30px",
-                background: "#ffffff",
-                boxShadow: "0 10px 30px rgba(0,0,0,0.05)"
-              }}>
+              <Card style={{ borderRadius: 20, padding: "30px", background: "#ffffff", boxShadow: "0 10px 30px rgba(0,0,0,0.05)" }}>
                 <h4 style={{ fontWeight: 700, color: "#34495e" }}>Quick Actions</h4>
                 <div className="d-flex flex-column gap-3 mt-3">
-                 
                   <Button variant="outline-info" style={{ borderRadius: 10 }} onClick={() => window.open("http://localhost:8501", "_blank")}> AI Counselor Chat</Button>
                   <Button variant="outline-success" style={{ borderRadius: 10 }} onClick={() => navigate("/chat")}> Connect with Peers</Button>
                 </div>
@@ -143,12 +195,7 @@ export default function UserHome() {
           {/* TREATMENT PLAN */}
           <Col md={12}>
             <motion.div initial="hidden" animate="enter" whileHover="hover" variants={cardVariants} transition={{ duration: 0.5 }}>
-              <Card style={{
-                borderRadius: 20,
-                padding: "30px",
-                background: "#ffffff",
-                boxShadow: "0 10px 30px rgba(0,0,0,0.05)"
-              }}>
+              <Card style={{ borderRadius: 20, padding: "30px", background: "#ffffff", boxShadow: "0 10px 30px rgba(0,0,0,0.05)" }}>
                 <h4 style={{ fontWeight: 700, color: "#34495e" }}>Treatment Plan</h4>
                 {loadingPlan ? (
                   <Spinner animation="border" size="sm" className="mt-3" />
@@ -166,30 +213,18 @@ export default function UserHome() {
           {/* NEARBY CENTRES */}
           <Col md={12}>
             <motion.div initial="hidden" animate="enter" whileHover="hover" variants={cardVariants} transition={{ duration: 0.55 }}>
-              <Card style={{
-                borderRadius: 20,
-                padding: "30px",
-                background: "#ffffff",
-                boxShadow: "0 10px 30px rgba(0,0,0,0.05)"
-              }}>
+              <Card style={{ borderRadius: 20, padding: "30px", background: "#ffffff", boxShadow: "0 10px 30px rgba(0,0,0,0.05)" }}>
                 <div className="d-flex justify-content-between align-items-center">
                   <h4 style={{ fontWeight: 700, color: "#34495e" }}>Nearby Therapy Centers</h4>
                   <Button variant="primary" size="sm" onClick={handleFindCentres} disabled={loadingCentres}>
                     {loadingCentres ? (<><Spinner animation="border" size="sm" /> Searching...</>) : "Find Nearby Centres"}
                   </Button>
                 </div>
-
                 {geoError && <p style={{ color: "red", marginTop: 10 }}>{geoError}</p>}
-
                 <Row className="mt-4 g-3">
                   {nearbyTherapy.length ? nearbyTherapy.map((center, idx) => (
                     <Col md={4} key={idx}>
-                      <Card style={{
-                        borderRadius: 15,
-                        padding: "20px",
-                        background: "#f9fafc",
-                        boxShadow: "0 8px 20px rgba(0,0,0,0.05)"
-                      }}>
+                      <Card style={{ borderRadius: 15, padding: "20px", background: "#f9fafc", boxShadow: "0 8px 20px rgba(0,0,0,0.05)" }}>
                         <h6 style={{ fontWeight: 700, color: "#2c3e50" }}>{center.name}</h6>
                         <p style={{ color: "#7f8c8d", fontSize: 13 }}>{center.address}</p>
                         <div className="d-flex justify-content-between align-items-center mt-2">

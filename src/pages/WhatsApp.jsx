@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { auth, googleProvider, db, storage } from "./firebase";
 import { signInWithPopup } from "firebase/auth";
-
 import {
   collection,
   doc,
@@ -37,15 +36,32 @@ export default function WhatsApp() {
   const [search, setSearch] = useState("");
   const bottomRef = useRef(null);
 
+  // Store unsubscribe functions for cleanup
+  const unsubscribes = useRef([]);
+
+  // ----- Reset all state -----
+  const resetAllState = () => {
+    setUser(null);
+    setGroups([]);
+    setSelectedGroup(null);
+    setMessages([]);
+    setTypingUsers([]);
+    localStorage.removeItem("selectedGroup");
+    // Detach all listeners
+    unsubscribes.current.forEach(fn => fn && fn());
+    unsubscribes.current = [];
+  };
+
   // ----- Auth observer -----
   useEffect(() => {
-    const unsub = auth.onAuthStateChanged(async (u) => {
+    const unsubAuth = auth.onAuthStateChanged(async (u) => {
       if (u) {
         setUser(u);
         await setDoc(doc(db, "users", u.uid), { email: u.email, avatar: u.photoURL || null, online: true }, { merge: true });
-      } else setUser(null);
+      } else resetAllState();
     });
-    return unsub;
+    unsubscribes.current.push(unsubAuth);
+    return () => unsubAuth();
   }, []);
 
   // ----- Sign in -----
@@ -55,14 +71,16 @@ export default function WhatsApp() {
       const u = res.user;
       setUser(u);
       await setDoc(doc(db, "users", u.uid), { email: u.email, avatar: u.photoURL || null, online: true }, { merge: true });
-    } catch (e) { console.error("Sign-in error:", e); }
+    } catch (e) {
+      console.error("Sign-in error:", e);
+    }
   };
 
   // ----- Sign out -----
   const signOut = async () => {
     if (user) await updateDoc(doc(db, "users", user.uid), { online: false });
     await auth.signOut();
-    setUser(null);
+    resetAllState();
   };
 
   // ----- Listen users online -----
@@ -72,15 +90,18 @@ export default function WhatsApp() {
       snap.docs.forEach(d => (map[d.id] = d.data()));
       setUsersOnline(map);
     });
-    return unsub;
+    unsubscribes.current.push(unsub);
+    return () => unsub();
   }, []);
 
   // ----- Listen groups -----
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, "groups"), (snap) => {
+    const q = query(collection(db, "groups"), orderBy("name"));
+    const unsub = onSnapshot(q, (snap) => {
       setGroups(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
-    return unsub;
+    unsubscribes.current.push(unsub);
+    return () => unsub();
   }, []);
 
   // ----- Restore selected group -----
@@ -89,7 +110,7 @@ export default function WhatsApp() {
     if (savedGroup) setSelectedGroup(JSON.parse(savedGroup));
   }, []);
 
-  // ----- Listen messages -----
+  // ----- Listen messages for selected group -----
   useEffect(() => {
     if (!selectedGroup) {
       setMessages([]);
@@ -112,7 +133,8 @@ export default function WhatsApp() {
         if (updatePromises.length) await Promise.all(updatePromises);
       }
     });
-    return unsub;
+    unsubscribes.current.push(unsub);
+    return () => unsub();
   }, [selectedGroup, user]);
 
   // ----- Listen typing users -----
@@ -122,7 +144,8 @@ export default function WhatsApp() {
       const data = snap.data() || {};
       setTypingUsers(data.typing || []);
     });
-    return unsub;
+    unsubscribes.current.push(unsub);
+    return () => unsub();
   }, [selectedGroup]);
 
   // ----- Typing signal -----
@@ -139,7 +162,7 @@ export default function WhatsApp() {
   const createGroup = async () => {
     if (!newGroupName.trim() || !user) return;
     const gRef = doc(collection(db, "groups"));
-    await setDoc(gRef, { name: newGroupName.trim(), members: [user.uid], typing: [] });
+    await setDoc(gRef, { name: newGroupName.trim(), members: [user.uid], typing: [], isPublic: true });
     setNewGroupName("");
     setShowCreateGroup(false);
   };
@@ -224,27 +247,6 @@ export default function WhatsApp() {
     ? { bg: "#07101a", panel: "#0b1420", sidebar: "#071824", card: "#0f1b24", text: "#e6eef3", muted: "#9fb4c8", myBubble: "#2b8a3e", otherBubble: "#0f2a3a" }
     : { bg: "#f5f5f5", panel: "#ffffff", sidebar: "#ffffff", card: "#ffffff", text: "#0b1220", muted: "#6b7280", myBubble: "#dcf8c6", otherBubble: "#ffffff" };
 
-  const styles = {
-    root: { display: "flex", height: "100vh", fontFamily: "Inter, Arial", background: palette.bg, color: palette.text },
-    sidebar: { width: 320, borderRight: "1px solid rgba(0,0,0,0.06)", background: palette.sidebar, padding: 16, boxSizing: "border-box", overflowY: "auto" },
-    header: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 },
-    userInfo: { display: "flex", alignItems: "center", gap: 12 },
-    avatar: { width: 48, height: 48, borderRadius: 999 },
-    groupList: { marginTop: 8, display: "grid", gap: 10 },
-    groupCard: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: 12, borderRadius: 10, background: palette.card, boxShadow: "0 1px 4px rgba(0,0,0,0.06)" },
-    main: { flex: 1, display: "flex", flexDirection: "column", background: palette.panel },
-    chatHeader: { padding: "12px 16px", borderBottom: `1px solid rgba(0,0,0,0.06)`, display: "flex", justifyContent: "space-between", alignItems: "center", background: palette.panel },
-    messages: { flex: 1, padding: 16, overflowY: "auto", background: darkMode ? "#07101a" : "#e5ddd5" },
-    msgRow: { display: "flex", marginBottom: 12 },
-    msgBubble: { padding: "10px 12px", borderRadius: 16, maxWidth: "68%", boxShadow: "0 1px 0 rgba(0,0,0,0.06)" },
-    inputRow: { padding: 12, borderTop: `1px solid rgba(0,0,0,0.06)`, display: "flex", gap: 8, alignItems: "center", background: palette.panel },
-    textInput: { flex: 1, padding: "10px 12px", borderRadius: 20, border: "1px solid rgba(0,0,0,0.08)", outline: "none", background: darkMode ? "#071826" : "#fff", color: palette.text },
-    actionBtn: { padding: "8px 12px", borderRadius: 16, border: "none", cursor: "pointer", background: "#0b93f6", color: "#fff" },
-    smallMuted: { color: palette.muted, fontSize: 12 },
-    typing: { fontStyle: "italic", color: palette.muted, fontSize: 13 },
-    emojiWrapper: { position: "absolute", bottom: 80, left: 24, zIndex: 9999 },
-  };
-
   // ----- Not signed in UI -----
   if (!user) {
     return (
@@ -259,17 +261,16 @@ export default function WhatsApp() {
     );
   }
 
-  // ----- Main UI -----
   return (
-    <div style={styles.root}>
+    <div style={{ display: "flex", height: "100vh", fontFamily: "Inter, Arial", background: palette.bg, color: palette.text }}>
       {/* Sidebar */}
-      <aside style={styles.sidebar}>
-        <div style={styles.header}>
-          <div style={styles.userInfo}>
-            <img src={user.photoURL || "https://via.placeholder.com/48"} alt="me" style={styles.avatar} />
+      <aside style={{ width: 320, borderRight: "1px solid rgba(0,0,0,0.06)", background: palette.sidebar, padding: 16, boxSizing: "border-box", overflowY: "auto" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <img src={user.photoURL || "https://via.placeholder.com/48"} alt="me" style={{ width: 48, height: 48, borderRadius: 999 }} />
             <div>
               <div style={{ fontWeight: 700 }}>{user.email.split("@")[0]}</div>
-              <div style={styles.smallMuted}>{usersOnline[user.uid]?.online ? "Online" : "Offline"}</div>
+              <div style={{ color: palette.muted, fontSize: 12 }}>{usersOnline[user.uid]?.online ? "Online" : "Offline"}</div>
             </div>
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -277,18 +278,16 @@ export default function WhatsApp() {
             <button onClick={signOut} style={{ padding: 8, borderRadius: 8, border: "none", cursor: "pointer" }}>Logout</button>
           </div>
         </div>
-
         <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
           <input placeholder="Search groups..." style={{ flex: 1, padding: 8, borderRadius: 8, border: "1px solid rgba(0,0,0,0.08)" }} value={search} onChange={(e) => setSearch(e.target.value)} />
           <button onClick={() => setShowCreateGroup(true)} style={{ padding: 8, borderRadius: 8 }}>+ New</button>
         </div>
-
-        <div style={styles.groupList}>
+        <div style={{ marginTop: 8, display: "grid", gap: 10 }}>
           {filteredGroups.map((g) => (
-            <div key={g.id} style={styles.groupCard}>
+            <div key={g.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: 12, borderRadius: 10, background: palette.card, boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
               <div>
                 <div style={{ fontWeight: 700 }}>{g.name}</div>
-                <div style={styles.smallMuted}>{(g.members || []).length} members</div>
+                <div style={{ color: palette.muted, fontSize: 12 }}>{(g.members || []).length} members</div>
               </div>
               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                 <button onClick={() => toggleJoin(g)} style={{ padding: "6px 10px", borderRadius: 8, border: "none", cursor: "pointer" }}>
@@ -304,23 +303,25 @@ export default function WhatsApp() {
       </aside>
 
       {/* Main Chat */}
-      <main style={styles.main}>
-        <div style={styles.chatHeader}>
+      <main style={{ flex: 1, display: "flex", flexDirection: "column", background: palette.panel }}>
+        {/* Chat header */}
+        <div style={{ padding: "12px 16px", borderBottom: `1px solid rgba(0,0,0,0.06)`, display: "flex", justifyContent: "space-between", alignItems: "center", background: palette.panel }}>
           <div>
             <div style={{ fontWeight: 700 }}>{selectedGroup ? selectedGroup.name : "Select a group"}</div>
-            <div style={styles.smallMuted}>
+            <div style={{ color: palette.muted, fontSize: 12 }}>
               {selectedGroup ? `${(selectedGroup.members || []).length} members • ${typingUsers.filter(t => t !== user.email).join(", ")}` : "Open a group to start chatting"}
             </div>
           </div>
         </div>
 
-        <div style={styles.messages}>
+        {/* Messages */}
+        <div style={{ flex: 1, padding: 16, overflowY: "auto", background: darkMode ? "#07101a" : "#e5ddd5" }}>
           {!selectedGroup && <div style={{ color: palette.muted }}>No group selected — open or join one from the left</div>}
           {selectedGroup && messages.map((msg) => {
             const mine = msg.senderUid === user.uid;
-            const bubbleStyle = { ...styles.msgBubble, background: mine ? palette.myBubble : palette.otherBubble };
+            const bubbleStyle = { padding: "10px 12px", borderRadius: 16, maxWidth: "68%", boxShadow: "0 1px 0 rgba(0,0,0,0.06)", background: mine ? palette.myBubble : palette.otherBubble };
             return (
-              <div key={msg.id} style={{ ...styles.msgRow, justifyContent: mine ? "flex-end" : "flex-start" }}>
+              <div key={msg.id} style={{ display: "flex", marginBottom: 12, justifyContent: mine ? "flex-end" : "flex-start" }}>
                 <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
                   {!mine && <img src={msg.senderAvatar || "https://via.placeholder.com/40"} style={{ width: 36, height: 36, borderRadius: 999 }} alt="" />}
                   <div style={bubbleStyle}>
@@ -342,45 +343,43 @@ export default function WhatsApp() {
             );
           })}
           <div ref={bottomRef}></div>
-          {typingUsers.filter(t => t !== user.email).length > 0 && <div style={styles.typing}>{typingUsers.filter(t => t !== user.email).join(", ")} typing...</div>}
+          {typingUsers.filter(t => t !== user.email).length > 0 && <div style={{ fontStyle: "italic", color: palette.muted, fontSize: 13 }}>{typingUsers.filter(t => t !== user.email).join(", ")} typing...</div>}
         </div>
 
+        {/* Input */}
         {selectedGroup && (
-          <div style={styles.inputRow}>
-            <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} style={{ cursor: "pointer" }}>😀</button>
+          <div style={{ padding: 12, borderTop: `1px solid rgba(0,0,0,0.06)`, display: "flex", gap: 8, alignItems: "center", background: palette.panel }}>
+            <button onClick={() => setShowEmojiPicker((s) => !s)} style={{ fontSize: 20 }}>😀</button>
             <input
-              style={styles.textInput}
               placeholder="Type a message"
+              style={{ flex: 1, padding: "8px 12px", borderRadius: 20, border: "1px solid rgba(0,0,0,0.1)" }}
               value={newMsg}
-              onChange={(e) => setNewMsg(e.target.value)}
-              onKeyDown={() => sendTypingSignal()}
-              onKeyPress={(e) => { if (e.key === "Enter") sendMessage(); }}
+              onChange={(e) => { setNewMsg(e.target.value); sendTypingSignal(); }}
+              onKeyDown={(e) => e.key === "Enter" && sendMessage()}
             />
-            <input type="file" style={{ display: "none" }} id="fileUpload" onChange={(e) => handleFileUpload(e.target.files[0])} />
-            <label htmlFor="fileUpload" style={{ cursor: "pointer" }}>📎</label>
-            <button onClick={() => sendMessage()} style={styles.actionBtn}>Send</button>
+            <input type="file" onChange={(e) => handleFileUpload(e.target.files[0])} style={{ display: "none" }} id="fileInput" />
+            <label htmlFor="fileInput" style={{ cursor: "pointer" }}>📎</label>
+            <button onClick={() => sendMessage()} style={{ padding: "6px 12px", borderRadius: 8, background: "#0b93f6", color: "#fff", border: "none", cursor: "pointer" }}>Send</button>
           </div>
         )}
 
-        {showEmojiPicker && <div style={styles.emojiWrapper}><Picker data={emojiData} onEmojiSelect={addEmoji} /></div>}
-      </main>
+        {/* Emoji picker */}
+        {showEmojiPicker && <div style={{ position: "absolute", bottom: 70, left: 20 }}><Picker data={emojiData} onEmojiSelect={addEmoji} /></div>}
 
-      {/* Create Group Modal */}
-      {showCreateGroup && (
-        <div style={{
-          position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
-          background: "rgba(0,0,0,0.4)", display: "flex", justifyContent: "center", alignItems: "center"
-        }}>
-          <div style={{ background: palette.panel, padding: 24, borderRadius: 12 }}>
-            <h3>Create New Group</h3>
-            <input value={newGroupName} onChange={(e) => setNewGroupName(e.target.value)} placeholder="Group name" style={{ padding: 8, marginTop: 12, width: "100%", borderRadius: 8 }} />
-            <div style={{ marginTop: 16, display: "flex", gap: 8, justifyContent: "flex-end" }}>
-              <button onClick={() => setShowCreateGroup(false)} style={{ padding: 8, borderRadius: 8 }}>Cancel</button>
-              <button onClick={createGroup} style={{ padding: 8, borderRadius: 8, background: "#0b93f6", color: "#fff" }}>Create</button>
+        {/* Create group modal */}
+        {showCreateGroup && (
+          <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", justifyContent: "center", alignItems: "center" }}>
+            <div style={{ background: palette.panel, padding: 20, borderRadius: 12, width: 300, display: "flex", flexDirection: "column", gap: 12 }}>
+              <h3>Create Group</h3>
+              <input value={newGroupName} onChange={(e) => setNewGroupName(e.target.value)} placeholder="Group name" style={{ padding: 8, borderRadius: 8, border: "1px solid rgba(0,0,0,0.1)" }} />
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                <button onClick={() => setShowCreateGroup(false)} style={{ padding: 6, borderRadius: 8 }}>Cancel</button>
+                <button onClick={createGroup} style={{ padding: 6, borderRadius: 8, background: "#0b93f6", color: "#fff" }}>Create</button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </main>
     </div>
   );
 }

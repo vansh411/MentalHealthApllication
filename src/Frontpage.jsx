@@ -12,6 +12,7 @@ import {
 } from "react-bootstrap";
 import { useSpring, animated } from "@react-spring/web";
 
+
 // ----------------------------------------
 // Feature Card Component
 // ----------------------------------------
@@ -104,6 +105,62 @@ function AssessmentModal({ show, handleClose, handleStart }) {
 }
 
 // ----------------------------------------
+// Chatbot Suggestion Modal
+// ----------------------------------------
+function ChatbotModal({ show, handleClose, handleChat }) {
+  return (
+    <Modal show={show} onHide={handleClose} centered size="md">
+      <Modal.Body
+        style={{
+          padding: "2rem",
+          borderRadius: "15px",
+          textAlign: "center",
+        }}
+      >
+        <h3 style={{ fontWeight: "700", marginBottom: "10px" }}>
+          Need Someone to Talk To?
+        </h3>
+
+        <p style={{ color: "#666", fontSize: "1.05rem" }}>
+          You can chat with our friendly AI chatbot anytime for emotional
+          support, insights, or just a calming conversation.
+        </p>
+
+        <div className="d-flex justify-content-center mt-4 gap-3">
+          <Button
+            style={{
+              padding: "0.7rem 1.8rem",
+              borderRadius: "12px",
+              border: "none",
+              backgroundColor: "#3498db",
+              fontWeight: "600",
+            }}
+            onClick={handleChat}
+          >
+            Talk to Chatbot
+          </Button>
+
+          <Button
+            style={{
+              padding: "0.7rem 1.8rem",
+              borderRadius: "12px",
+              background: "#eee",
+              color: "#555",
+              fontWeight: "600",
+              border: "none",
+            }}
+            onClick={handleClose}
+          >
+            Not Now
+          </Button>
+        </div>
+      </Modal.Body>
+    </Modal>
+  );
+}
+
+
+// ----------------------------------------
 // MAIN FRONT PAGE
 // ----------------------------------------
 function Frontpage() {
@@ -111,7 +168,7 @@ function Frontpage() {
   const loggedInUser = localStorage.getItem("loggedInUser");
   const users = JSON.parse(localStorage.getItem("users")) || {};
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
-
+const [showChatbotModal, setShowChatbotModal] = useState(false);
   // Get initials
   let initials = "";
   if (loggedInUser && users[loggedInUser]) {
@@ -128,10 +185,17 @@ function Frontpage() {
     setShowAssessmentModal(true);
   };
 
-  const handleStartAssessment = () => {
-    setShowAssessmentModal(false);
-    navigate("/questions");
-  };
+const handleStartAssessment = () => {
+  setShowAssessmentModal(false);   // close first popup
+  setShowChatbotModal(true);       // show chatbot modal immediately
+};
+
+const goToChatbot = () => {
+  setShowChatbotModal(false);
+  window.open("http://localhost:8501", "_blank"); // open chatbot
+  navigate("/questions"); // navigate after chatbot
+};
+
 
   // Quotes
   const quotes = [
@@ -274,37 +338,111 @@ function Frontpage() {
       </div>
 
       {/* FEATURES */}
-      <Container className="pb-5">
-        <h2 className="text-center mb-5" style={{ fontWeight: "700" }}>
-          Features
-        </h2>
-        <Row className="g-4">
-          {[
-            {
-              icon: "🤖",
-              title: "AI Chatbot",
-              text: "Talk with a human-like chatbot that listens with empathy.",
-              onClick: () => window.open("http://localhost:8501", "_blank"),
-            },
-            {
-              icon: "😊",
-              title: "Mood Tracker",
-              text: "Track your emotions and discover your patterns.",
-              onClick: null,
-            },
-            {
-              icon: "📊",
-              title: "Insight Reports",
-              text: "Get personalized weekly summaries for your wellbeing.",
-              onClick: null,
-            },
-          ].map((f, i) => (
-            <Col md={4} key={i}>
-              <FeatureCard {...f} delay={i * 200} />
-            </Col>
-          ))}
-        </Row>
-      </Container>
+     
+      {/* MINI GAMES SECTION  */}
+{/* MINI GAMES SECTION  */}
+<Container className="pb-5 mt-5">
+  <h2 className="text-center mb-5" style={{ fontWeight: "700" }}>
+    Mind-Healing Mini Games 🎮
+  </h2>
+
+  <Row className="g-4">
+    {[
+      {
+        icon: "🌬️",
+        title: "Breathing Bubble",
+        text: "Interactive inhale-exhale game for instant relaxation.",
+        onClick: () => navigate("/game-breathing"),
+      },
+      {
+        icon: "🫧",
+        title: "Bubble Pop",
+        text: "Pop bubbles to relieve stress and calm your mind.",
+        onClick: () => navigate("/game-bubble"),
+      },
+      {
+        icon: "🎨",
+        title: "Color Calm",
+        text: "Relaxing color-filling activity to reduce anxiety.",
+        onClick: () => navigate("/game-color"),
+      },
+      {
+        icon: "🧠",
+        title: "Memory Match",
+        text: "Match pairs to boost focus and mental clarity.",
+        onClick: () => navigate("/game-memory"),
+      },
+      {
+        icon: "💛",
+        title: "Gratitude Journal",
+        text: "Write something positive to uplift your mood.",
+        onClick: () => navigate("/game-gratitude"),
+      },
+      {
+        icon: "🔄",
+        title: "Anxiety Spinner",
+        text: "Spin to release stress through calming motion.",
+        onClick: () => navigate("/game-spinner"),
+      },
+      {
+        icon: "🔤",
+        title: "Word Relax",
+        text: "Type soothing words to relax your mind.",
+        onClick: () => navigate("/game-word"),
+      },
+    ].map((g, i) => (
+      <Col md={4} key={i}>
+        <FeatureCard {...g} delay={i * 150} />
+      </Col>
+    ))}
+  </Row>
+</Container>
+ {/* EXTERNAL STRESS-RELIEF GAMES SECTION */}
+<Container className="pb-5 mt-5">
+  <h2 className="text-center mb-5" style={{ fontWeight: "700" }}>
+    Stress-Relief Activities 🌿
+  </h2>
+
+  <Row className="g-4">
+    {[
+      {
+        icon: "🌬️",
+        title: "Calm Breathing Exercise",
+        text: "Guided box breathing for instant relaxation.",
+        onClick: () => window.open("https://calm.com/breathe", "_blank"),
+      },
+      {
+        icon: "🧘",
+        title: "MHA Stress Toolkit",
+        text: "Grounding exercises & mental wellness activities.",
+        onClick: () =>
+          window.open(
+            "https://screening.mhanational.org/stress-toolkits/",
+            "_blank"
+          ),
+      },
+     
+     
+      {
+        icon: "🎧",
+        title: "A Soft Murmur",
+        text: "Mix calming background sounds to relax or study.",
+        onClick: () => window.open("https://asoftmurmur.com/", "_blank"),
+      },
+      {
+        icon: "🌧️",
+        title: "Rainy Mood",
+        text: "Relax with peaceful rain sound therapy.",
+        onClick: () => window.open("https://rainymood.com/", "_blank"),
+      },
+    ].map((item, i) => (
+      <Col md={4} key={i}>
+        <FeatureCard {...item} delay={i * 150} />
+      </Col>
+    ))}
+  </Row>
+</Container>
+
 
       {/* FOOTER */}
       <footer
@@ -324,6 +462,16 @@ function Frontpage() {
         handleClose={() => setShowAssessmentModal(false)}
         handleStart={handleStartAssessment}
       />
+   <ChatbotModal
+  show={showChatbotModal}
+  handleClose={() => {
+    setShowChatbotModal(false);
+    navigate("/questions"); // navigate if user says "Not Now"
+  }}
+  handleChat={goToChatbot}
+/>
+
+
     </div>
   );
 }
