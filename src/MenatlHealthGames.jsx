@@ -519,86 +519,356 @@ export function GratitudeJournal() {
 }
 
 // -------------------------------
-// 6) AnxietySpinner (wheel that picks categories)
+// Enhanced Anxiety Spinner - Professional & Engaging
 // -------------------------------
 export function AnxietySpinner() {
-  const categories = ["Breath", "Call a friend", "Walk", "Hydrate", "Stretch", "Journal"];
+  const categories = [
+    { name: "Deep Breathing", icon: "🫁", color: "#60A5FA", tip: "4-7-8 technique: Breathe in for 4, hold for 7, out for 8" },
+    { name: "Call Someone", icon: "📞", color: "#34D399", tip: "Reach out to a friend or family member" },
+    { name: "Take a Walk", icon: "🚶", color: "#A78BFA", tip: "Even 5 minutes outside can reset your mind" },
+    { name: "Hydrate", icon: "💧", color: "#22D3EE", tip: "Drink a full glass of water slowly" },
+    { name: "Stretch", icon: "🧘", color: "#FB923C", tip: "Simple neck and shoulder rolls work wonders" },
+    { name: "Journal", icon: "📝", color: "#F472B6", tip: "Write down 3 things you're grateful for" },
+  ];
+
   const [angle, setAngle] = useState(0);
   const [selected, setSelected] = useState(null);
   const [spinning, setSpinning] = useState(false);
+  const [history, setHistory] = useState([]);
+  const [streak, setStreak] = useState(0);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const spin = () => {
     if (spinning) return;
     setSpinning(true);
-    const rounds = Math.floor(Math.random() * 4) + 4; // 4-7 rounds
+    setSelected(null);
+    setShowConfetti(false);
+    
+    const rounds = Math.floor(Math.random() * 3) + 5; // 5-7 full rotations
     const pick = Math.floor(Math.random() * categories.length);
-    const finalAngle = 360 * rounds + (360 / categories.length) * pick + Math.floor(Math.random() * (360 / categories.length));
+    const segmentAngle = 360 / categories.length;
+    const extraSpin = Math.random() * (segmentAngle * 0.8) + (segmentAngle * 0.1);
+    const finalAngle = 360 * rounds + segmentAngle * pick + extraSpin;
+    
     setAngle((a) => a + finalAngle);
 
-    // reveal after animation
     setTimeout(() => {
-      setSelected(categories[pick]);
+      const selectedCategory = categories[pick];
+      setSelected(selectedCategory);
+      setHistory(prev => [selectedCategory, ...prev.slice(0, 4)]);
+      setStreak(prev => prev + 1);
       setSpinning(false);
-    }, 3000);
+      setShowConfetti(true);
+      
+      setTimeout(() => setShowConfetti(false), 2000);
+    }, 3500);
   };
 
-  return (
-    <div style={{ padding: 20, fontFamily: "Poppins, sans-serif" }}>
-      <h1 style={{ fontSize: 26 }}>Anxiety Spinner</h1>
-      <p style={{ color: "#555" }}>Spin for a quick coping suggestion.</p>
+  const segmentAngle = 360 / categories.length;
 
-      <div style={{ display: "flex", gap: 20, alignItems: "center", marginTop: 12 }}>
-        <div style={{ width: 220, height: 220, position: "relative" }}>
-          <div
-            style={{
-              width: "100%",
-              height: "100%",
-              borderRadius: "50%",
-              border: "8px solid #EFF6FF",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              transform: `rotate(${angle}deg)`,
-              transition: "transform 3s cubic-bezier(.17,.67,.45,1)",
-            }}
-          >
-            {/* segments */}
-            {categories.map((c, i) => (
-              <div
-                key={i}
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      padding: '40px 20px',
+      fontFamily: "'Inter', -apple-system, sans-serif",
+    }}>
+      <div style={{
+        maxWidth: 900,
+        margin: '0 auto',
+        background: 'white',
+        borderRadius: 24,
+        boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+        overflow: 'hidden',
+      }}>
+        {/* Header */}
+        <div style={{
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          padding: '32px 40px',
+          color: 'white',
+        }}>
+          <h1 style={{ fontSize: 36, margin: 0, fontWeight: 700 }}>🎯 Mindful Moments Spinner</h1>
+          <p style={{ margin: '8px 0 0 0', opacity: 0.95, fontSize: 16 }}>
+            Take a spin and discover your next calming activity
+          </p>
+          
+          {/* Streak Counter */}
+          <div style={{
+            marginTop: 16,
+            display: 'inline-block',
+            background: 'rgba(255,255,255,0.2)',
+            padding: '8px 16px',
+            borderRadius: 20,
+            backdropFilter: 'blur(10px)',
+          }}>
+            🔥 {streak} spin{streak !== 1 ? 's' : ''} today
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div style={{ padding: 40 }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: 40,
+            alignItems: 'center',
+          }}>
+            {/* Spinner Wheel */}
+            <div style={{ position: 'relative' }}>
+              <div style={{
+                width: 320,
+                height: 320,
+                margin: '0 auto',
+                position: 'relative',
+              }}>
+                {/* Outer glow ring */}
+                <div style={{
+                  position: 'absolute',
+                  inset: -8,
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                  opacity: 0.3,
+                  filter: 'blur(12px)',
+                }} />
+                
+                {/* Wheel container */}
+                <div
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    borderRadius: '50%',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+                    transform: `rotate(${angle}deg)`,
+                    transition: spinning ? 'transform 3.5s cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'none',
+                  }}
+                >
+                  {/* Wheel segments */}
+                  {categories.map((cat, i) => {
+                    const rotation = segmentAngle * i;
+                    return (
+                      <div
+                        key={i}
+                        style={{
+                          position: 'absolute',
+                          width: '50%',
+                          height: '50%',
+                          left: '50%',
+                          top: '50%',
+                          transformOrigin: '0% 0%',
+                          transform: `rotate(${rotation}deg)`,
+                          clipPath: `polygon(0 0, 100% 0, 100% 100%)`,
+                          background: cat.color,
+                          border: '2px solid white',
+                        }}
+                      >
+                        <div style={{
+                          position: 'absolute',
+                          left: '60%',
+                          top: '20%',
+                          transform: 'rotate(-45deg)',
+                          fontSize: 32,
+                        }}>
+                          {cat.icon}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  
+                  {/* Center circle */}
+                  <div style={{
+                    position: 'absolute',
+                    left: '50%',
+                    top: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: 60,
+                    height: 60,
+                    borderRadius: '50%',
+                    background: 'white',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 24,
+                  }}>
+                    ✨
+                  </div>
+                </div>
+
+                {/* Pointer */}
+                <div style={{
+                  position: 'absolute',
+                  top: -12,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  fontSize: 36,
+                  filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+                  zIndex: 10,
+                }}>
+                  ▼
+                </div>
+              </div>
+
+              {/* Confetti effect */}
+              {showConfetti && (
+                <div style={{
+                  position: 'absolute',
+                  inset: 0,
+                  pointerEvents: 'none',
+                  animation: 'fadeOut 2s forwards',
+                }}>
+                  {[...Array(20)].map((_, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        position: 'absolute',
+                        left: `${50 + Math.cos(i * 18 * Math.PI / 180) * 40}%`,
+                        top: `${50 + Math.sin(i * 18 * Math.PI / 180) * 40}%`,
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        background: categories[i % categories.length].color,
+                        animation: `confetti ${1 + Math.random()}s ease-out forwards`,
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Right Panel */}
+            <div>
+              <button
+                onClick={spin}
+                disabled={spinning}
                 style={{
-                  position: "absolute",
-                  width: "50%",
-                  height: "50%",
-                  left: "50%",
-                  top: "50%",
-                  transformOrigin: "0% 0%",
-                  transform: `rotate(${(360 / categories.length) * i}deg) translate(-50%, -50%)`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "flex-start",
-                  paddingLeft: 12,
-                  fontSize: 12,
-                  color: "#05386B",
+                  width: '100%',
+                  padding: '18px 32px',
+                  fontSize: 20,
+                  fontWeight: 700,
+                  borderRadius: 16,
+                  border: 'none',
+                  background: spinning 
+                    ? '#CBD5E1' 
+                    : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: 'white',
+                  cursor: spinning ? 'not-allowed' : 'pointer',
+                  boxShadow: spinning ? 'none' : '0 8px 24px rgba(102, 126, 234, 0.4)',
+                  transition: 'all 0.3s ease',
+                  transform: spinning ? 'scale(0.98)' : 'scale(1)',
+                }}
+                onMouseEnter={(e) => {
+                  if (!spinning) e.target.style.transform = 'scale(1.05)';
+                }}
+                onMouseLeave={(e) => {
+                  if (!spinning) e.target.style.transform = 'scale(1)';
                 }}
               >
-                {c}
-              </div>
-            ))}
+                {spinning ? '🎲 Spinning...' : '🎯 Spin the Wheel'}
+              </button>
+
+              {/* Selected Result */}
+              {selected && (
+                <div style={{
+                  marginTop: 24,
+                  padding: 24,
+                  borderRadius: 16,
+                  background: `linear-gradient(135deg, ${selected.color}22, ${selected.color}11)`,
+                  border: `2px solid ${selected.color}`,
+                  animation: 'slideIn 0.5s ease-out',
+                }}>
+                  <div style={{
+                    fontSize: 48,
+                    textAlign: 'center',
+                    marginBottom: 8,
+                  }}>
+                    {selected.icon}
+                  </div>
+                  <h3 style={{
+                    fontSize: 24,
+                    fontWeight: 700,
+                    margin: '0 0 8px 0',
+                    textAlign: 'center',
+                    color: '#1F2937',
+                  }}>
+                    {selected.name}
+                  </h3>
+                  <p style={{
+                    margin: 0,
+                    color: '#6B7280',
+                    textAlign: 'center',
+                    fontSize: 14,
+                    lineHeight: 1.6,
+                  }}>
+                    {selected.tip}
+                  </p>
+                </div>
+              )}
+
+              {/* History */}
+              {history.length > 0 && (
+                <div style={{ marginTop: 24 }}>
+                  <h4 style={{
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: '#6B7280',
+                    margin: '0 0 12px 0',
+                    textTransform: 'uppercase',
+                    letterSpacing: 1,
+                  }}>
+                    Recent Activities
+                  </h4>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {history.map((item, i) => (
+                      <div
+                        key={i}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          padding: '6px 12px',
+                          borderRadius: 20,
+                          background: `${item.color}22`,
+                          fontSize: 13,
+                          color: '#374151',
+                        }}
+                      >
+                        <span>{item.icon}</span>
+                        <span style={{ fontWeight: 500 }}>{item.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-
-          <div style={{ position: "absolute", left: "50%", top: -6, transform: "translateX(-50%)", fontSize: 18 }}>▼</div>
-        </div>
-
-        <div>
-          <button className="btn btn-primary" onClick={spin} disabled={spinning}>
-            {spinning ? "Spinning…" : "Spin"}
-          </button>
-
-          <div style={{ marginTop: 12, fontWeight: 700 }}>{selected ? `Suggestion: ${selected}` : "No suggestion yet"}</div>
-          <div style={{ marginTop: 8, color: "#666" }}>Try it now — one small action can shift your state.</div>
         </div>
       </div>
+
+      <style>{`
+        @keyframes confetti {
+          to {
+            transform: translate(${Math.random() * 200 - 100}px, ${Math.random() * 200 + 100}px) rotate(${Math.random() * 360}deg);
+            opacity: 0;
+          }
+        }
+        
+        @keyframes fadeOut {
+          to { opacity: 0; }
+        }
+        
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 }
