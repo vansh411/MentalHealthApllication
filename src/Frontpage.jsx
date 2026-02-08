@@ -1,52 +1,67 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  Container,
-  Navbar,
-  Nav,
-  Button,
-  Row,
-  Col,
-  Card,
-  Modal,
-} from "react-bootstrap";
-import { useSpring, animated } from "@react-spring/web";
-
+import { Container, Navbar, Nav, Button, Row, Col, Card, Modal } from "react-bootstrap";
+import { motion, AnimatePresence } from "framer-motion";
 
 // ----------------------------------------
 // Feature Card Component
 // ----------------------------------------
-function FeatureCard({ icon, title, text, delay, onClick }) {
-  const style = useSpring({
-    from: { opacity: 0, transform: "translateY(20px)" },
-    to: { opacity: 1, transform: "translateY(0px)" },
-    delay,
-  });
-
+function FeatureCard({ icon, title, text, delay, onClick, gradient }) {
   return (
-    <animated.div style={style}>
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay }}
+      whileHover={{ y: -8, transition: { duration: 0.2 } }}
+    >
       <Card
         style={{
-          background: "#fff",
-          borderRadius: "18px",
-          boxShadow: "0 12px 28px rgba(0,0,0,0.08)",
-          padding: "2rem 1rem",
+          background: gradient || "linear-gradient(135deg, #667eea15, #764ba215)",
+          borderRadius: "20px",
+          boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
+          padding: "2rem 1.5rem",
           textAlign: "center",
-          transition: "0.3s",
+          border: "1px solid rgba(102, 126, 234, 0.1)",
           cursor: onClick ? "pointer" : "default",
+          height: "100%",
+          transition: "all 0.3s ease",
         }}
         onClick={onClick}
-        className="hover-up"
+        onMouseEnter={(e) => {
+          e.currentTarget.style.boxShadow = "0 12px 32px rgba(102, 126, 234, 0.15)";
+          e.currentTarget.style.borderColor = "rgba(102, 126, 234, 0.3)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.06)";
+          e.currentTarget.style.borderColor = "rgba(102, 126, 234, 0.1)";
+        }}
       >
-        <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>{icon}</div>
-        <Card.Body>
-          <Card.Title style={{ fontWeight: "700", color: "#222" }}>
+        <div
+          style={{
+            fontSize: "3.5rem",
+            marginBottom: "1rem",
+            filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.1))",
+          }}
+        >
+          {icon}
+        </div>
+        <Card.Body style={{ padding: "0.5rem 0" }}>
+          <Card.Title
+            style={{
+              fontWeight: "700",
+              color: "#1f2937",
+              fontSize: "1.2rem",
+              marginBottom: "0.8rem",
+            }}
+          >
             {title}
           </Card.Title>
-          <Card.Text style={{ color: "#555" }}>{text}</Card.Text>
+          <Card.Text style={{ color: "#6b7280", fontSize: "0.95rem", lineHeight: 1.6 }}>
+            {text}
+          </Card.Text>
         </Card.Body>
       </Card>
-    </animated.div>
+    </motion.div>
   );
 }
 
@@ -58,41 +73,45 @@ function AssessmentModal({ show, handleClose, handleStart }) {
     <Modal show={show} onHide={handleClose} centered size="md">
       <Modal.Body
         style={{
-          padding: "2rem",
-          borderRadius: "15px",
+          padding: "3rem 2.5rem",
+          borderRadius: "20px",
           textAlign: "center",
+          background: "linear-gradient(135deg, #f0f9ff, #ffffff)",
         }}
       >
-        <h3 style={{ fontWeight: "700", marginBottom: "10px" }}>
-          Take Your Assessment?
+        <div style={{ fontSize: "64px", marginBottom: "1rem" }}>📋</div>
+        <h3 style={{ fontWeight: "800", marginBottom: "12px", color: "#1f2937", fontSize: "28px" }}>
+          Ready to Begin Your Journey?
         </h3>
-        <p style={{ color: "#666", fontSize: "1.05rem" }}>
-          This quick assessment helps us tailor your mental wellness experience.
-          You can choose to do it now or later.
+        <p style={{ color: "#6b7280", fontSize: "1.05rem", lineHeight: 1.7, marginBottom: "2rem" }}>
+          This brief assessment helps us understand your needs and provide personalized support. It takes just 5 minutes.
         </p>
 
-        <div className="d-flex justify-content-center mt-4 gap-3">
+        <div className="d-flex justify-content-center gap-3">
           <Button
             style={{
-              padding: "0.7rem 1.8rem",
+              padding: "14px 32px",
               borderRadius: "12px",
               border: "none",
-              backgroundColor: "#2ecc71",
+              background: "linear-gradient(135deg, #10b981, #059669)",
               fontWeight: "600",
+              fontSize: "16px",
+              boxShadow: "0 4px 12px rgba(16, 185, 129, 0.3)",
             }}
             onClick={handleStart}
           >
-            Start Now
+            ✨ Start Assessment
           </Button>
 
           <Button
             style={{
-              padding: "0.7rem 1.8rem",
+              padding: "14px 32px",
               borderRadius: "12px",
-              background: "#eee",
-              color: "#555",
+              background: "#f3f4f6",
+              color: "#6b7280",
               fontWeight: "600",
-              border: "none",
+              fontSize: "16px",
+              border: "1px solid #e5e7eb",
             }}
             onClick={handleClose}
           >
@@ -112,42 +131,45 @@ function ChatbotModal({ show, handleClose, handleChat }) {
     <Modal show={show} onHide={handleClose} centered size="md">
       <Modal.Body
         style={{
-          padding: "2rem",
-          borderRadius: "15px",
+          padding: "3rem 2.5rem",
+          borderRadius: "20px",
           textAlign: "center",
+          background: "linear-gradient(135deg, #eff6ff, #ffffff)",
         }}
       >
-        <h3 style={{ fontWeight: "700", marginBottom: "10px" }}>
+        <div style={{ fontSize: "64px", marginBottom: "1rem" }}>💬</div>
+        <h3 style={{ fontWeight: "800", marginBottom: "12px", color: "#1f2937", fontSize: "28px" }}>
           Need Someone to Talk To?
         </h3>
-
-        <p style={{ color: "#666", fontSize: "1.05rem" }}>
-          You can chat with our friendly AI chatbot anytime for emotional
-          support, insights, or just a calming conversation.
+        <p style={{ color: "#6b7280", fontSize: "1.05rem", lineHeight: 1.7, marginBottom: "2rem" }}>
+          Our AI companion is here 24/7 to listen, support, and guide you through difficult moments. You're never alone.
         </p>
 
-        <div className="d-flex justify-content-center mt-4 gap-3">
+        <div className="d-flex justify-content-center gap-3">
           <Button
             style={{
-              padding: "0.7rem 1.8rem",
+              padding: "14px 32px",
               borderRadius: "12px",
               border: "none",
-              backgroundColor: "#3498db",
+              background: "linear-gradient(135deg, #667eea, #764ba2)",
               fontWeight: "600",
+              fontSize: "16px",
+              boxShadow: "0 4px 12px rgba(102, 126, 234, 0.3)",
             }}
             onClick={handleChat}
           >
-            Talk to Chatbot
+            💭 Start Conversation
           </Button>
 
           <Button
             style={{
-              padding: "0.7rem 1.8rem",
+              padding: "14px 32px",
               borderRadius: "12px",
-              background: "#eee",
-              color: "#555",
+              background: "#f3f4f6",
+              color: "#6b7280",
               fontWeight: "600",
-              border: "none",
+              fontSize: "16px",
+              border: "1px solid #e5e7eb",
             }}
             onClick={handleClose}
           >
@@ -159,7 +181,6 @@ function ChatbotModal({ show, handleClose, handleChat }) {
   );
 }
 
-
 // ----------------------------------------
 // MAIN FRONT PAGE
 // ----------------------------------------
@@ -168,7 +189,8 @@ function Frontpage() {
   const loggedInUser = localStorage.getItem("loggedInUser");
   const users = JSON.parse(localStorage.getItem("users")) || {};
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
-const [showChatbotModal, setShowChatbotModal] = useState(false);
+  const [showChatbotModal, setShowChatbotModal] = useState(false);
+
   // Get initials
   let initials = "";
   if (loggedInUser && users[loggedInUser]) {
@@ -185,91 +207,118 @@ const [showChatbotModal, setShowChatbotModal] = useState(false);
     setShowAssessmentModal(true);
   };
 
-const handleStartAssessment = () => {
-  setShowAssessmentModal(false);   // close first popup
-  setShowChatbotModal(true);       // show chatbot modal immediately
-};
+  const handleStartAssessment = () => {
+    setShowAssessmentModal(false);
+    setShowChatbotModal(true);
+  };
 
-const goToChatbot = () => {
-  setShowChatbotModal(false);
-  window.open("http://localhost:8501", "_blank"); // open chatbot
-  navigate("/questions"); // navigate after chatbot
-};
-
+  const goToChatbot = () => {
+    setShowChatbotModal(false);
+    window.open("http://localhost:8501", "_blank");
+    navigate("/questions");
+  };
 
   // Quotes
   const quotes = [
-    "Your mental health is a priority, not a luxury.",
-    "It’s okay to not be okay — what matters is you’re trying.",
-    "Healing takes time, but every step counts.",
-    "You are not your thoughts. You are the observer of them.",
-    "Even the darkest night will end, and the sun will rise again.",
+    { text: "Your mental health is a priority, not a luxury.", emoji: "💙" },
+    { text: "It's okay to not be okay — what matters is you're trying.", emoji: "🌱" },
+    { text: "Healing takes time, but every step counts.", emoji: "✨" },
+    { text: "You are not your thoughts. You are the observer of them.", emoji: "🧘" },
+    { text: "Even the darkest night will end, and the sun will rise again.", emoji: "🌅" },
   ];
   const [currentQuote, setCurrentQuote] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(
-      () => setCurrentQuote((prev) => (prev + 1) % quotes.length),
-      5000
-    );
+    const interval = setInterval(() => setCurrentQuote((prev) => (prev + 1) % quotes.length), 6000);
     return () => clearInterval(interval);
   }, []);
 
   return (
     <div
       style={{
-        fontFamily: "Poppins, sans-serif",
-        background: "#F4F7FA",
+        fontFamily: "'Inter', -apple-system, sans-serif",
+        background: "linear-gradient(180deg, #f0f9ff 0%, #ffffff 100%)",
         minHeight: "100vh",
-        color: "#222",
+        color: "#1f2937",
       }}
     >
-      {/* Navbar */}
+      {/* Modern Navbar */}
       <Navbar
         expand="lg"
         style={{
           position: "sticky",
           top: 0,
           zIndex: 999,
-          background: "linear-gradient(90deg, #2C3E50, #1A252F, #2C3E50)",
-          padding: "0.9rem 2rem",
+          background: "rgba(255, 255, 255, 0.98)",
+          backdropFilter: "blur(10px)",
+          boxShadow: "0 2px 20px rgba(0,0,0,0.06)",
+          padding: "1rem 0",
         }}
       >
         <Container>
           <Navbar.Brand
             as={Link}
             to="/"
-            style={{ fontWeight: "bold", color: "#fff", fontSize: "1.5rem" }}
+            style={{
+              fontWeight: "800",
+              fontSize: "1.8rem",
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+            }}
           >
-            MindCare
+            🧠 MindCare
           </Navbar.Brand>
           <Navbar.Toggle />
           <Navbar.Collapse className="justify-content-end">
-            <Nav>
+            <Nav className="align-items-center">
               {!loggedInUser ? (
                 <>
-                  <Nav.Link as={Link} to="/signin" style={{ color: "#fff" }}>
+                  <Nav.Link
+                    as={Link}
+                    to="/signin"
+                    style={{
+                      color: "#6b7280",
+                      fontWeight: "600",
+                      marginRight: "12px",
+                      padding: "8px 20px",
+                    }}
+                  >
                     Login
                   </Nav.Link>
-                  <Nav.Link as={Link} to="/createaccount" style={{ color: "#fff" }}>
+                  <Button
+                    as={Link}
+                    to="/createaccount"
+                    style={{
+                      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                      border: "none",
+                      borderRadius: "10px",
+                      padding: "10px 24px",
+                      fontWeight: "600",
+                    }}
+                  >
                     Sign Up
-                  </Nav.Link>
+                  </Button>
                 </>
               ) : (
                 <div
                   onClick={() => navigate("/profile")}
                   style={{
-                    backgroundColor: "#2ecc71",
+                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                     color: "#fff",
-                    borderRadius: "50%",
-                    width: "45px",
-                    height: "45px",
+                    borderRadius: "12px",
+                    width: "48px",
+                    height: "48px",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     cursor: "pointer",
                     fontWeight: "700",
-                    marginLeft: "10px",
+                    fontSize: "18px",
+                    boxShadow: "0 4px 12px rgba(102, 126, 234, 0.3)",
                   }}
                 >
                   {initials}
@@ -280,198 +329,396 @@ const goToChatbot = () => {
         </Container>
       </Navbar>
 
-      {/* HERO */}
-      <div style={{ textAlign: "center", padding: "80px 5%" }}>
-        <Card
-          style={{
-            background: "linear-gradient(135deg, #6DD5FA, #2980B9)",
-            color: "#fff",
-            borderRadius: "25px",
-            maxWidth: "760px",
-            margin: "0 auto",
-            padding: "3.2rem 2rem",
-            boxShadow: "0 18px 40px rgba(0,0,0,0.2)",
-          }}
-          className="hover-scale"
+      {/* HERO SECTION */}
+      <Container style={{ paddingTop: "60px", paddingBottom: "40px" }}>
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
         >
-          <h1 style={{ fontWeight: "800", fontSize: "2.9rem" }}>
-            Your Mental Health Companion
-          </h1>
-          <p
+          <div
             style={{
-              fontSize: "1.15rem",
-              marginTop: "1rem",
-              opacity: 0.95,
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              borderRadius: "28px",
+              padding: "80px 60px",
+              textAlign: "center",
+              boxShadow: "0 20px 60px rgba(102, 126, 234, 0.25)",
+              position: "relative",
+              overflow: "hidden",
             }}
           >
-            Chat with an empathetic AI, track your mood, and gain helpful insights.
+            {/* Decorative circles */}
+            <div
+              style={{
+                position: "absolute",
+                top: -50,
+                right: -50,
+                width: 200,
+                height: 200,
+                borderRadius: "50%",
+                background: "rgba(255, 255, 255, 0.1)",
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                bottom: -80,
+                left: -80,
+                width: 300,
+                height: 300,
+                borderRadius: "50%",
+                background: "rgba(255, 255, 255, 0.05)",
+              }}
+            />
+
+            <div style={{ position: "relative", zIndex: 1 }}>
+              <h1
+                style={{
+                  fontWeight: "900",
+                  fontSize: "3.5rem",
+                  color: "#ffffff",
+                  marginBottom: "20px",
+                  lineHeight: 1.2,
+                }}
+              >
+                Your Journey to
+                <br />
+                <span style={{ color: "#a5f3fc" }}>Mental Wellness</span> Starts Here
+              </h1>
+              <p
+                style={{
+                  fontSize: "1.3rem",
+                  color: "rgba(255, 255, 255, 0.95)",
+                  marginBottom: "40px",
+                  maxWidth: "700px",
+                  margin: "0 auto 40px",
+                  lineHeight: 1.7,
+                }}
+              >
+                A compassionate space for self-discovery, healing, and growth. Get personalized support, connect with peers, and build healthier habits.
+              </p>
+              <div style={{ display: "flex", gap: "16px", justifyContent: "center", flexWrap: "wrap" }}>
+                <Button
+                  onClick={openAssessmentModal}
+                  style={{
+                    padding: "16px 36px",
+                    background: "#ffffff",
+                    color: "#667eea",
+                    border: "none",
+                    borderRadius: "14px",
+                    fontWeight: "700",
+                    fontSize: "18px",
+                    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.15)",
+                  }}
+                >
+                  🎯 Start Your Assessment
+                </Button>
+                <Button
+                  onClick={() => navigate("/chat")}
+                  style={{
+                    padding: "16px 36px",
+                    background: "rgba(255, 255, 255, 0.2)",
+                    color: "#ffffff",
+                    border: "2px solid rgba(255, 255, 255, 0.5)",
+                    borderRadius: "14px",
+                    fontWeight: "700",
+                    fontSize: "18px",
+                    backdropFilter: "blur(10px)",
+                  }}
+                >
+                  💬 Join Community
+                </Button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Rotating Quotes */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentQuote}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.5 }}
+            style={{
+              marginTop: "32px",
+              padding: "28px 40px",
+              borderRadius: "20px",
+              background: "rgba(255, 255, 255, 0.9)",
+              backdropFilter: "blur(10px)",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
+              textAlign: "center",
+              maxWidth: "800px",
+              margin: "32px auto 0",
+              border: "1px solid rgba(102, 126, 234, 0.1)",
+            }}
+          >
+            <div style={{ fontSize: "32px", marginBottom: "12px" }}>{quotes[currentQuote].emoji}</div>
+            <p
+              style={{
+                fontSize: "1.2rem",
+                fontStyle: "italic",
+                color: "#374151",
+                margin: 0,
+                fontWeight: 500,
+              }}
+            >
+              "{quotes[currentQuote].text}"
+            </p>
+          </motion.div>
+        </AnimatePresence>
+      </Container>
+
+      {/* Stats Section */}
+      <Container style={{ paddingTop: "40px", paddingBottom: "60px" }}>
+        <Row className="g-4">
+          {[
+            { icon: "👥", number: "1000+", label: "Active Members" },
+            { icon: "💬", number: "24/7", label: "AI Support" },
+            { icon: "🎯", number: "95%", label: "Feel Better" },
+            { icon: "🌟", number: "50+", label: "Wellness Tools" },
+          ].map((stat, i) => (
+            <Col md={3} key={i}>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: i * 0.1 }}
+                style={{
+                  background: "#ffffff",
+                  padding: "30px",
+                  borderRadius: "20px",
+                  textAlign: "center",
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
+                  border: "1px solid rgba(102, 126, 234, 0.1)",
+                }}
+              >
+                <div style={{ fontSize: "48px", marginBottom: "12px" }}>{stat.icon}</div>
+                <div style={{ fontSize: "32px", fontWeight: "800", color: "#667eea", marginBottom: "4px" }}>
+                  {stat.number}
+                </div>
+                <div style={{ fontSize: "14px", color: "#6b7280", fontWeight: 600 }}>{stat.label}</div>
+              </motion.div>
+            </Col>
+          ))}
+        </Row>
+      </Container>
+
+      {/* WELLNESS GAMES SECTION */}
+      <Container style={{ paddingBottom: "80px" }}>
+        <div style={{ textAlign: "center", marginBottom: "50px" }}>
+          <h2 style={{ fontWeight: "800", fontSize: "2.5rem", color: "#1f2937", marginBottom: "12px" }}>
+            🎮 Interactive Wellness Games
+          </h2>
+          <p style={{ fontSize: "1.1rem", color: "#6b7280", maxWidth: "600px", margin: "0 auto" }}>
+            Engaging activities designed to calm your mind and lift your spirits
+          </p>
+        </div>
+
+        <Row className="g-4">
+          {[
+            {
+              icon: "🌬️",
+              title: "Breathing Bubble",
+              text: "Guided breathing exercises for instant calm and stress relief",
+              onClick: () => navigate("/game-breathing"),
+              gradient: "linear-gradient(135deg, #a8edea15, #fed6e315)",
+            },
+            {
+              icon: "🫧",
+              title: "Bubble Pop",
+              text: "Pop colorful bubbles to release tension and anxiety",
+              onClick: () => navigate("/game-bubble"),
+              gradient: "linear-gradient(135deg, #fee2e215, #fad0c415)",
+            },
+            {
+              icon: "🎨",
+              title: "Color Calm",
+              text: "Therapeutic coloring to relax and express yourself",
+              onClick: () => navigate("/game-color"),
+              gradient: "linear-gradient(135deg, #fbc2eb15, #a6c1ee15)",
+            },
+            {
+              icon: "🧠",
+              title: "Memory Match",
+              text: "Sharpen focus while enjoying a peaceful matching game",
+              onClick: () => navigate("/game-memory"),
+              gradient: "linear-gradient(135deg, #84fab015, #8fd3f415)",
+            },
+            {
+              icon: "💛",
+              title: "Gratitude Journal",
+              text: "Daily prompts to cultivate positivity and thankfulness",
+              onClick: () => navigate("/game-gratitude"),
+              gradient: "linear-gradient(135deg, #ffeaa715, #ffcb0515)",
+            },
+            {
+              icon: "🎯",
+              title: "Anxiety Spinner",
+              text: "Discover personalized coping strategies when you need them",
+              onClick: () => navigate("/game-spinner"),
+              gradient: "linear-gradient(135deg, #667eea15, #764ba215)",
+            },
+          ].map((game, i) => (
+            <Col md={4} key={i}>
+              <FeatureCard {...game} delay={i * 0.1} />
+            </Col>
+          ))}
+        </Row>
+      </Container>
+
+      {/* EXTERNAL RESOURCES SECTION */}
+      <Container style={{ paddingBottom: "80px" }}>
+        <div style={{ textAlign: "center", marginBottom: "50px" }}>
+          <h2 style={{ fontWeight: "800", fontSize: "2.5rem", color: "#1f2937", marginBottom: "12px" }}>
+            🌿 Curated Wellness Resources
+          </h2>
+          <p style={{ fontSize: "1.1rem", color: "#6b7280", maxWidth: "600px", margin: "0 auto" }}>
+            Trusted external tools and exercises to support your mental health journey
+          </p>
+        </div>
+
+        <Row className="g-4">
+          {[
+            {
+              icon: "🧘",
+              title: "Calm Breathing",
+              text: "Professional guided breathing exercises for immediate stress relief",
+              onClick: () => window.open("https://calm.com/breathe", "_blank"),
+              gradient: "linear-gradient(135deg, #d4fc7915, #99f2c815)",
+            },
+            {
+              icon: "🌸",
+              title: "MHA Stress Toolkit",
+              text: "Evidence-based grounding techniques and mental wellness activities",
+              onClick: () => window.open("https://screening.mhanational.org/stress-toolkits/", "_blank"),
+              gradient: "linear-gradient(135deg, #fccb9015, #d57eeb15)",
+            },
+            {
+              icon: "🎧",
+              title: "A Soft Murmur",
+              text: "Customize ambient sounds to create your perfect focus or relaxation mix",
+              onClick: () => window.open("https://asoftmurmur.com/", "_blank"),
+              gradient: "linear-gradient(135deg, #a1c4fd15, #c2e9fb15)",
+            },
+            {
+              icon: "🌧️",
+              title: "Rainy Mood",
+              text: "Soothing rain sounds to help you relax, sleep, or concentrate",
+              onClick: () => window.open("https://rainymood.com/", "_blank"),
+              gradient: "linear-gradient(135deg, #89f7fe15, #66a6ff15)",
+            },
+          ].map((resource, i) => (
+            <Col md={6} key={i}>
+              <FeatureCard {...resource} delay={i * 0.1} />
+            </Col>
+          ))}
+        </Row>
+      </Container>
+
+      {/* CTA Section */}
+      <Container style={{ paddingBottom: "80px" }}>
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          style={{
+            background: "linear-gradient(135deg, #f0fdf4, #dcfce7)",
+            borderRadius: "28px",
+            padding: "60px 40px",
+            textAlign: "center",
+            border: "2px solid #86efac",
+          }}
+        >
+          <div style={{ fontSize: "64px", marginBottom: "20px" }}>💚</div>
+          <h2 style={{ fontWeight: "800", fontSize: "2.2rem", color: "#1f2937", marginBottom: "16px" }}>
+            You Don't Have to Face This Alone
+          </h2>
+          <p style={{ fontSize: "1.15rem", color: "#6b7280", marginBottom: "32px", maxWidth: "700px", margin: "0 auto 32px" }}>
+            Join thousands who've found support, understanding, and hope through our community. Your mental health matters, and we're here for you every step of the way.
           </p>
           <Button
-            style={{
-              marginTop: "1.7rem",
-              padding: "0.9rem 2.2rem",
-              backgroundColor: "#2ecc71",
-              border: "none",
-              borderRadius: "12px",
-              fontWeight: "700",
-            }}
             onClick={openAssessmentModal}
+            style={{
+              padding: "16px 36px",
+              background: "linear-gradient(135deg, #10b981, #059669)",
+              border: "none",
+              borderRadius: "14px",
+              fontWeight: "700",
+              fontSize: "18px",
+              color: "#ffffff",
+              boxShadow: "0 8px 24px rgba(16, 185, 129, 0.3)",
+            }}
           >
-            Take Assessment
+            Begin Your Journey Today
           </Button>
-        </Card>
-
-        <Card
-          style={{
-            marginTop: "25px",
-            maxWidth: "650px",
-            margin: "25px auto",
-            padding: "1rem 2rem",
-            borderRadius: "15px",
-            background: "#fff",
-            boxShadow: "0 6px 20px rgba(0,0,0,0.08)",
-            fontStyle: "italic",
-          }}
-        >
-          “{quotes[currentQuote]}”
-        </Card>
-      </div>
-
-      {/* FEATURES */}
-     
-      {/* MINI GAMES SECTION  */}
-{/* MINI GAMES SECTION  */}
-<Container className="pb-5 mt-5">
-  <h2 className="text-center mb-5" style={{ fontWeight: "700" }}>
-    Mind-Healing Mini Games 🎮
-  </h2>
-
-  <Row className="g-4">
-    {[
-      {
-        icon: "🌬️",
-        title: "Breathing Bubble",
-        text: "Interactive inhale-exhale game for instant relaxation.",
-        onClick: () => navigate("/game-breathing"),
-      },
-      {
-        icon: "🫧",
-        title: "Bubble Pop",
-        text: "Pop bubbles to relieve stress and calm your mind.",
-        onClick: () => navigate("/game-bubble"),
-      },
-      {
-        icon: "🎨",
-        title: "Color Calm",
-        text: "Relaxing color-filling activity to reduce anxiety.",
-        onClick: () => navigate("/game-color"),
-      },
-      {
-        icon: "🧠",
-        title: "Memory Match",
-        text: "Match pairs to boost focus and mental clarity.",
-        onClick: () => navigate("/game-memory"),
-      },
-      {
-        icon: "💛",
-        title: "Gratitude Journal",
-        text: "Write something positive to uplift your mood.",
-        onClick: () => navigate("/game-gratitude"),
-      },
-      {
-        icon: "🔄",
-        title: "Anxiety Spinner",
-        text: "Spin to release stress through calming motion.",
-        onClick: () => navigate("/game-spinner"),
-      },
-      {
-        icon: "🔤",
-        title: "Word Relax",
-        text: "Type soothing words to relax your mind.",
-        onClick: () => navigate("/game-word"),
-      },
-    ].map((g, i) => (
-      <Col md={4} key={i}>
-        <FeatureCard {...g} delay={i * 150} />
-      </Col>
-    ))}
-  </Row>
-</Container>
- {/* EXTERNAL STRESS-RELIEF GAMES SECTION */}
-<Container className="pb-5 mt-5">
-  <h2 className="text-center mb-5" style={{ fontWeight: "700" }}>
-    Stress-Relief Activities 🌿
-  </h2>
-
-  <Row className="g-4">
-    {[
-      {
-        icon: "🌬️",
-        title: "Calm Breathing Exercise",
-        text: "Guided box breathing for instant relaxation.",
-        onClick: () => window.open("https://calm.com/breathe", "_blank"),
-      },
-      {
-        icon: "🧘",
-        title: "MHA Stress Toolkit",
-        text: "Grounding exercises & mental wellness activities.",
-        onClick: () =>
-          window.open(
-            "https://screening.mhanational.org/stress-toolkits/",
-            "_blank"
-          ),
-      },
-     
-     
-      {
-        icon: "🎧",
-        title: "A Soft Murmur",
-        text: "Mix calming background sounds to relax or study.",
-        onClick: () => window.open("https://asoftmurmur.com/", "_blank"),
-      },
-      {
-        icon: "🌧️",
-        title: "Rainy Mood",
-        text: "Relax with peaceful rain sound therapy.",
-        onClick: () => window.open("https://rainymood.com/", "_blank"),
-      },
-    ].map((item, i) => (
-      <Col md={4} key={i}>
-        <FeatureCard {...item} delay={i * 150} />
-      </Col>
-    ))}
-  </Row>
-</Container>
-
+        </motion.div>
+      </Container>
 
       {/* FOOTER */}
       <footer
         style={{
-          background: "#EEF1F4",
-          padding: "1.2rem",
-          textAlign: "center",
-          borderTop: "1px solid #ddd",
+          background: "linear-gradient(135deg, #1f2937, #111827)",
+          padding: "50px 0 30px",
+          color: "#ffffff",
         }}
       >
-        <p>© {new Date().getFullYear()} MindCare. All rights reserved.</p>
+        <Container>
+          <Row className="g-4">
+            <Col md={4}>
+              <h4 style={{ fontWeight: "800", marginBottom: "16px", fontSize: "1.5rem" }}>🧠 MindCare</h4>
+              <p style={{ color: "#9ca3af", lineHeight: 1.7 }}>
+                Empowering you to take control of your mental wellness with compassionate support and evidence-based tools.
+              </p>
+            </Col>
+            <Col md={4}>
+              <h5 style={{ fontWeight: "700", marginBottom: "16px" }}>Quick Links</h5>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                <Link to="/about" style={{ color: "#9ca3af", textDecoration: "none" }}>About Us</Link>
+                <Link to="/resources" style={{ color: "#9ca3af", textDecoration: "none" }}>Resources</Link>
+                <Link to="/privacy" style={{ color: "#9ca3af", textDecoration: "none" }}>Privacy Policy</Link>
+                <Link to="/contact" style={{ color: "#9ca3af", textDecoration: "none" }}>Contact</Link>
+              </div>
+            </Col>
+            <Col md={4}>
+              <h5 style={{ fontWeight: "700", marginBottom: "16px" }}>Crisis Support</h5>
+              <p style={{ color: "#9ca3af", lineHeight: 1.7, marginBottom: "12px" }}>
+                If you're in crisis, help is available 24/7:
+              </p>
+              <div style={{ color: "#a5f3fc", fontWeight: "600", fontSize: "1.1rem" }}>
+                988 - Suicide & Crisis Lifeline
+              </div>
+            </Col>
+          </Row>
+          <div
+            style={{
+              borderTop: "1px solid #374151",
+              marginTop: "40px",
+              paddingTop: "24px",
+              textAlign: "center",
+              color: "#9ca3af",
+            }}
+          >
+            <p style={{ margin: 0 }}>© {new Date().getFullYear()} MindCare. All rights reserved. Made with 💙 for mental wellness.</p>
+          </div>
+        </Container>
       </footer>
 
-      {/* Modal */}
+      {/* Modals */}
       <AssessmentModal
         show={showAssessmentModal}
         handleClose={() => setShowAssessmentModal(false)}
         handleStart={handleStartAssessment}
       />
-   <ChatbotModal
-  show={showChatbotModal}
-  handleClose={() => {
-    setShowChatbotModal(false);
-    navigate("/questions"); // navigate if user says "Not Now"
-  }}
-  handleChat={goToChatbot}
-/>
-
-
+      <ChatbotModal
+        show={showChatbotModal}
+        handleClose={() => {
+          setShowChatbotModal(false);
+          navigate("/questions");
+        }}
+        handleChat={goToChatbot}
+      />
     </div>
   );
 }

@@ -1,21 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 /*
-  Full-logic mini-game collection
-
-  Exported components (one-file bundle you can import from):
-   - BreathingGame
-   - MemoryMatch
-   - BubblePop
-   - ColorCalm
-   - GratitudeJournal
-   - AnxietySpinner
-   - WordRelax
-
-  Notes:
-  - All games are dependency-free and use only React + browser APIs.
-  - Where appropriate, games persist light state to localStorage (gratitude, color drawing image).
-  - Feel free to split components into separate files after verifying behavior.
+  Enhanced Mental Wellness Games Collection
+  Each game is designed with calming colors, therapeutic messaging, and mindful interactions
 */
 
 // -------------------------------
@@ -26,19 +14,35 @@ function shuffle(arr) {
 }
 
 // -------------------------------
-// 1) BreathingGame
+// 1) Enhanced Breathing Exercise
 // -------------------------------
 export function BreathingGame() {
-  // phases: inhale (4s), hold (2s), exhale (6s) - adjustable
-  const cycle = [
-    { name: "Inhale", seconds: 4 },
-    { name: "Hold", seconds: 2 },
-    { name: "Exhale", seconds: 6 },
-  ];
+  const cycles = {
+    "4-7-8 Relaxation": [
+      { name: "Inhale", seconds: 4, color: "#60A5FA" },
+      { name: "Hold", seconds: 7, color: "#A78BFA" },
+      { name: "Exhale", seconds: 8, color: "#34D399" },
+    ],
+    "Box Breathing": [
+      { name: "Inhale", seconds: 4, color: "#60A5FA" },
+      { name: "Hold", seconds: 4, color: "#A78BFA" },
+      { name: "Exhale", seconds: 4, color: "#34D399" },
+      { name: "Hold", seconds: 4, color: "#F59E0B" },
+    ],
+    "Quick Calm": [
+      { name: "Inhale", seconds: 3, color: "#60A5FA" },
+      { name: "Hold", seconds: 2, color: "#A78BFA" },
+      { name: "Exhale", seconds: 5, color: "#34D399" },
+    ],
+  };
 
+  const [selectedCycle, setSelectedCycle] = useState("4-7-8 Relaxation");
   const [running, setRunning] = useState(false);
   const [phaseIdx, setPhaseIdx] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(cycle[0].seconds);
+  const [timeLeft, setTimeLeft] = useState(cycles[selectedCycle][0].seconds);
+  const [completedCycles, setCompletedCycles] = useState(0);
+
+  const currentCycle = cycles[selectedCycle];
 
   useEffect(() => {
     let timer;
@@ -46,91 +50,211 @@ export function BreathingGame() {
       timer = setInterval(() => {
         setTimeLeft((t) => {
           if (t <= 1) {
-            // move to next phase
-            setPhaseIdx((p) => (p + 1) % cycle.length);
-            return cycle[(phaseIdx + 1) % cycle.length].seconds;
+            const nextIdx = (phaseIdx + 1) % currentCycle.length;
+            setPhaseIdx(nextIdx);
+            if (nextIdx === 0) setCompletedCycles((c) => c + 1);
+            return currentCycle[nextIdx].seconds;
           }
           return t - 1;
         });
       }, 1000);
     }
     return () => clearInterval(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [running, phaseIdx]);
+  }, [running, phaseIdx, currentCycle]);
 
   useEffect(() => {
-    // keep timeLeft synced when phase changes
-    setTimeLeft(cycle[phaseIdx].seconds);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phaseIdx]);
+    setTimeLeft(currentCycle[phaseIdx].seconds);
+  }, [phaseIdx, currentCycle]);
 
-  // size mapping: Inhale expands, Exhale contracts, Hold stable
   const sizeForPhase = (name) => {
-    if (name === "Inhale") return 260;
-    if (name === "Hold") return 240;
-    return 140; // Exhale
+    if (name === "Inhale") return 280;
+    if (name === "Hold") return 250;
+    return 160; // Exhale
   };
 
-  return (
-    <div style={{ fontFamily: "Poppins, sans-serif", padding: 20 }}>
-      <h1 style={{ fontSize: 28, marginBottom: 8 }}>Breathing Exercise</h1>
-      <p style={{ color: "#555" }}>
-        Follow the guidance below. Try to breathe smoothly — inhale, hold, then exhale.
-      </p>
+  const currentPhase = currentCycle[phaseIdx];
 
-      <div style={{ display: "flex", gap: 20, alignItems: "center", marginTop: 18 }}>
-        <div style={{ flex: 1 }}>
-          <div
-            aria-live="polite"
-            style={{
-              width: sizeForPhase(cycle[phaseIdx].name),
-              height: sizeForPhase(cycle[phaseIdx].name),
-              borderRadius: "50%",
-              margin: "0 auto",
-              transition: "width 800ms ease, height 800ms ease",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: "radial-gradient(circle at 30% 30%, #D6F6FF, #81D4FA)",
-              boxShadow: "0 14px 40px rgba(8, 88, 138, 0.12)",
-              color: "#04395E",
-              fontWeight: 700,
-            }}
-          >
-            {cycle[phaseIdx].name}
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%)",
+        padding: "40px 20px",
+        fontFamily: "'Inter', sans-serif",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 900,
+          margin: "0 auto",
+          background: "rgba(255, 255, 255, 0.9)",
+          borderRadius: 24,
+          boxShadow: "0 20px 60px rgba(0,0,0,0.1)",
+          padding: 40,
+          backdropFilter: "blur(10px)",
+        }}
+      >
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <h1 style={{ fontSize: 36, fontWeight: 800, color: "#1f2937", marginBottom: 8 }}>
+            🌬️ Guided Breathing
+          </h1>
+          <p style={{ color: "#6b7280", fontSize: 16 }}>
+            Follow the circle's rhythm to calm your mind and reduce stress
+          </p>
+        </div>
+
+        {/* Cycle Selector */}
+        <div style={{ marginBottom: 32, textAlign: "center" }}>
+          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+            {Object.keys(cycles).map((cycleName) => (
+              <button
+                key={cycleName}
+                onClick={() => {
+                  setSelectedCycle(cycleName);
+                  setRunning(false);
+                  setPhaseIdx(0);
+                  setCompletedCycles(0);
+                }}
+                style={{
+                  padding: "12px 24px",
+                  borderRadius: 12,
+                  border: selectedCycle === cycleName ? "2px solid #667eea" : "2px solid #e5e7eb",
+                  background: selectedCycle === cycleName ? "#eff6ff" : "#fff",
+                  color: selectedCycle === cycleName ? "#667eea" : "#6b7280",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                }}
+              >
+                {cycleName}
+              </button>
+            ))}
           </div>
         </div>
 
-        <div style={{ width: 260 }}>
-          <div style={{ fontWeight: 700, fontSize: 18 }}>{cycle[phaseIdx].name}</div>
-          <div style={{ marginTop: 8, color: "#444" }}>Time left: {timeLeft}s</div>
+        {/* Main Breathing Circle */}
+        <div style={{ display: "flex", gap: 40, alignItems: "center", flexWrap: "wrap", justifyContent: "center" }}>
+          <motion.div
+            style={{
+              width: sizeForPhase(currentPhase.name),
+              height: sizeForPhase(currentPhase.name),
+              borderRadius: "50%",
+              background: `radial-gradient(circle at 30% 30%, ${currentPhase.color}40, ${currentPhase.color}80)`,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: `0 20px 60px ${currentPhase.color}40`,
+              position: "relative",
+            }}
+            animate={{
+              width: sizeForPhase(currentPhase.name),
+              height: sizeForPhase(currentPhase.name),
+            }}
+            transition={{ duration: 0.8, ease: "easeInOut" }}
+          >
+            <div style={{ fontSize: 48, marginBottom: 8 }}>
+              {currentPhase.name === "Inhale" ? "⬆️" : currentPhase.name === "Exhale" ? "⬇️" : "⏸️"}
+            </div>
+            <div style={{ fontSize: 24, fontWeight: 700, color: "#1f2937" }}>{currentPhase.name}</div>
+            <div style={{ fontSize: 48, fontWeight: 800, color: currentPhase.color, marginTop: 8 }}>
+              {timeLeft}
+            </div>
+          </motion.div>
 
-          <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
-            {!running ? (
-              <button className="btn btn-primary" onClick={() => setRunning(true)}>
-                Start
-              </button>
-            ) : (
-              <button className="btn btn-warning" onClick={() => setRunning(false)}>
-                Pause
-              </button>
-            )}
-
-            <button
-              className="btn btn-outline-secondary"
-              onClick={() => {
-                setRunning(false);
-                setPhaseIdx(0);
-                setTimeLeft(cycle[0].seconds);
+          <div style={{ flex: 1, minWidth: 280 }}>
+            <div
+              style={{
+                background: "linear-gradient(135deg, #f9fafb, #ffffff)",
+                padding: 24,
+                borderRadius: 16,
+                border: "1px solid #e5e7eb",
               }}
             >
-              Reset
-            </button>
-          </div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: "#6b7280", marginBottom: 16 }}>
+                SESSION PROGRESS
+              </div>
 
-          <p style={{ marginTop: 12, color: "#666" }}>
-            Tip: sit comfortably, place one hand on your abdomen and breathe slowly.
-          </p>
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ fontSize: 32, fontWeight: 800, color: "#667eea" }}>{completedCycles}</div>
+                <div style={{ fontSize: 14, color: "#6b7280" }}>Cycles Completed</div>
+              </div>
+
+              <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
+                {!running ? (
+                  <button
+                    onClick={() => setRunning(true)}
+                    style={{
+                      flex: 1,
+                      padding: "14px 24px",
+                      borderRadius: 12,
+                      border: "none",
+                      background: "linear-gradient(135deg, #667eea, #764ba2)",
+                      color: "#fff",
+                      fontWeight: 700,
+                      fontSize: 16,
+                      cursor: "pointer",
+                      boxShadow: "0 4px 12px rgba(102, 126, 234, 0.4)",
+                    }}
+                  >
+                    ▶️ Start
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setRunning(false)}
+                    style={{
+                      flex: 1,
+                      padding: "14px 24px",
+                      borderRadius: 12,
+                      border: "none",
+                      background: "#f59e0b",
+                      color: "#fff",
+                      fontWeight: 700,
+                      fontSize: 16,
+                      cursor: "pointer",
+                    }}
+                  >
+                    ⏸️ Pause
+                  </button>
+                )}
+
+                <button
+                  onClick={() => {
+                    setRunning(false);
+                    setPhaseIdx(0);
+                    setCompletedCycles(0);
+                    setTimeLeft(currentCycle[0].seconds);
+                  }}
+                  style={{
+                    padding: "14px 24px",
+                    borderRadius: 12,
+                    border: "2px solid #e5e7eb",
+                    background: "#fff",
+                    color: "#6b7280",
+                    fontWeight: 700,
+                    fontSize: 16,
+                    cursor: "pointer",
+                  }}
+                >
+                  🔄 Reset
+                </button>
+              </div>
+
+              <div
+                style={{
+                  background: "#fef3c7",
+                  padding: 16,
+                  borderRadius: 12,
+                  border: "1px solid #fde68a",
+                }}
+              >
+                <div style={{ fontSize: 13, color: "#92400e", lineHeight: 1.6 }}>
+                  <strong>💡 Tip:</strong> Place one hand on your chest and one on your belly. Feel your breath
+                  move through your body. Focus on the present moment.
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -138,11 +262,17 @@ export function BreathingGame() {
 }
 
 // -------------------------------
-// 2) MemoryMatch (full logic)
+// 2) Enhanced Memory Match
 // -------------------------------
 export function MemoryMatch() {
-  const initialPairs = ["🐶", "🍎", "🌟", "🚗", "🎈", "🍩"];
-  const [cards, setCards] = useState(() => shuffle([...initialPairs, ...initialPairs]));
+  const themes = {
+    "Peaceful Nature": ["🌸", "🌿", "🦋", "🌊", "🌙", "⭐"],
+    "Calm Animals": ["🐨", "🦥", "🐢", "🐠", "🦢", "🐇"],
+    "Mindful Symbols": ["🕉️", "☮️", "💚", "🧘", "🌈", "✨"],
+  };
+
+  const [selectedTheme, setSelectedTheme] = useState("Peaceful Nature");
+  const [cards, setCards] = useState(() => shuffle([...themes[selectedTheme], ...themes[selectedTheme]]));
   const [openIdx, setOpenIdx] = useState([]);
   const [matched, setMatched] = useState([]);
   const [moves, setMoves] = useState(0);
@@ -171,14 +301,13 @@ export function MemoryMatch() {
         setMatched((m) => [...m, a, b]);
         setOpenIdx([]);
       } else {
-        // hide after short delay
         setTimeout(() => setOpenIdx([]), 800);
       }
     }
   };
 
-  const reset = () => {
-    const shuffled = shuffle([...initialPairs, ...initialPairs]);
+  const reset = (theme = selectedTheme) => {
+    const shuffled = shuffle([...themes[theme], ...themes[theme]]);
     setCards(shuffled);
     setOpenIdx([]);
     setMatched([]);
@@ -190,192 +319,464 @@ export function MemoryMatch() {
   const won = matched.length === cards.length && cards.length > 0;
 
   return (
-    <div style={{ padding: 20, fontFamily: "Poppins, sans-serif" }}>
-      <h1 style={{ fontSize: 26, marginBottom: 8 }}>Memory Match</h1>
-      <p style={{ color: "#555" }}>Find all pairs. Moves: {moves} • Time: {elapsed}s</p>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%)",
+        padding: "40px 20px",
+        fontFamily: "'Inter', sans-serif",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 600,
+          margin: "0 auto",
+          background: "rgba(255, 255, 255, 0.95)",
+          borderRadius: 24,
+          boxShadow: "0 20px 60px rgba(0,0,0,0.1)",
+          padding: 40,
+        }}
+      >
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <h1 style={{ fontSize: 36, fontWeight: 800, color: "#1f2937", marginBottom: 8 }}>🧠 Memory Match</h1>
+          <p style={{ color: "#6b7280", fontSize: 16 }}>
+            Match pairs to strengthen focus and calm your mind
+          </p>
+        </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 72px)", gap: 10, marginTop: 16 }}>
-        {cards.map((c, i) => {
-          const revealed = openIdx.includes(i) || matched.includes(i);
-          return (
-            <div
-              key={i}
-              onClick={() => flip(i)}
+        {/* Theme Selector */}
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: "#6b7280", marginBottom: 12 }}>CHOOSE THEME</div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {Object.keys(themes).map((theme) => (
+              <button
+                key={theme}
+                onClick={() => {
+                  setSelectedTheme(theme);
+                  reset(theme);
+                }}
+                style={{
+                  padding: "10px 20px",
+                  borderRadius: 10,
+                  border: selectedTheme === theme ? "2px solid #f59e0b" : "2px solid #e5e7eb",
+                  background: selectedTheme === theme ? "#fef3c7" : "#fff",
+                  color: selectedTheme === theme ? "#92400e" : "#6b7280",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  fontSize: 14,
+                }}
+              >
+                {theme}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr 1fr",
+            gap: 12,
+            marginBottom: 24,
+          }}
+        >
+          <div
+            style={{
+              background: "#eff6ff",
+              padding: 16,
+              borderRadius: 12,
+              textAlign: "center",
+              border: "1px solid #dbeafe",
+            }}
+          >
+            <div style={{ fontSize: 24, fontWeight: 800, color: "#3b82f6" }}>{moves}</div>
+            <div style={{ fontSize: 12, color: "#6b7280", fontWeight: 600 }}>MOVES</div>
+          </div>
+          <div
+            style={{
+              background: "#f0fdf4",
+              padding: 16,
+              borderRadius: 12,
+              textAlign: "center",
+              border: "1px solid #bbf7d0",
+            }}
+          >
+            <div style={{ fontSize: 24, fontWeight: 800, color: "#10b981" }}>{elapsed}s</div>
+            <div style={{ fontSize: 12, color: "#6b7280", fontWeight: 600 }}>TIME</div>
+          </div>
+          <div
+            style={{
+              background: "#fef3c7",
+              padding: 16,
+              borderRadius: 12,
+              textAlign: "center",
+              border: "1px solid #fde68a",
+            }}
+          >
+            <div style={{ fontSize: 24, fontWeight: 800, color: "#f59e0b" }}>{matched.length / 2}</div>
+            <div style={{ fontSize: 12, color: "#6b7280", fontWeight: 600 }}>PAIRS</div>
+          </div>
+        </div>
+
+        {/* Game Board */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: 12,
+            marginBottom: 24,
+          }}
+        >
+          {cards.map((c, i) => {
+            const revealed = openIdx.includes(i) || matched.includes(i);
+            return (
+              <motion.div
+                key={i}
+                onClick={() => flip(i)}
+                whileHover={{ scale: revealed ? 1 : 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                style={{
+                  aspectRatio: "1",
+                  borderRadius: 12,
+                  background: revealed
+                    ? "linear-gradient(135deg, #ffffff, #f9fafb)"
+                    : "linear-gradient(135deg, #667eea, #764ba2)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 36,
+                  cursor: revealed ? "default" : "pointer",
+                  boxShadow: revealed ? "0 4px 12px rgba(0,0,0,0.1)" : "0 4px 12px rgba(102, 126, 234, 0.3)",
+                  userSelect: "none",
+                  transition: "all 0.3s",
+                }}
+              >
+                {revealed ? c : "✨"}
+              </motion.div>
+            );
+          })}
+        </div>
+
+        {/* Controls */}
+        <div style={{ display: "flex", gap: 12 }}>
+          <button
+            onClick={() => reset()}
+            style={{
+              flex: 1,
+              padding: "14px",
+              borderRadius: 12,
+              border: "2px solid #e5e7eb",
+              background: "#fff",
+              color: "#6b7280",
+              fontWeight: 700,
+              cursor: "pointer",
+            }}
+          >
+            🔄 New Game
+          </button>
+        </div>
+
+        {/* Win Message */}
+        <AnimatePresence>
+          {won && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
               style={{
-                width: 72,
-                height: 72,
-                borderRadius: 8,
-                background: revealed ? "#fff" : "#F3F4F6",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 30,
-                cursor: "pointer",
-                boxShadow: "0 8px 20px rgba(2,6,23,0.06)",
-                userSelect: "none",
+                marginTop: 24,
+                padding: 24,
+                borderRadius: 16,
+                background: "linear-gradient(135deg, #d1fae5, #a7f3d0)",
+                border: "2px solid #6ee7b7",
+                textAlign: "center",
               }}
             >
-              {revealed ? c : "❓"}
-            </div>
-          );
-        })}
-      </div>
-
-      <div style={{ marginTop: 14, display: "flex", gap: 8 }}>
-        <button className="btn btn-outline-primary" onClick={reset}>
-          Reset
-        </button>
-        {won && <div className="alert alert-success">You won! Moves: {moves} • Time: {elapsed}s</div>}
+              <div style={{ fontSize: 48, marginBottom: 12 }}>🎉</div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: "#065f46", marginBottom: 8 }}>
+                Amazing! You did it!
+              </div>
+              <div style={{ fontSize: 14, color: "#047857" }}>
+                {moves} moves in {elapsed} seconds
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
 }
 
 // -------------------------------
-// 3) BubblePop (click floating bubbles to pop)
+// 3) Enhanced Bubble Pop
 // -------------------------------
 export function BubblePop() {
   const [bubbles, setBubbles] = useState([]);
   const [score, setScore] = useState(0);
-  const containerRef = useRef(null);
+  const [combo, setCombo] = useState(0);
+  const [lastPop, setLastPop] = useState(0);
+  const [affirmations, setAffirmations] = useState([]);
 
-  // spawn bubbles periodically
+  const positiveMessages = [
+    "You're doing great!",
+    "Keep going!",
+    "Well done!",
+    "Breathe and relax",
+    "You've got this!",
+    "One step at a time",
+    "You're stronger than you think",
+    "Peace is within you",
+  ];
+
   useEffect(() => {
     const spawn = setInterval(() => {
       setBubbles((prev) => {
         const id = Date.now() + Math.random();
-        const left = Math.random() * 80 + 5; // percent
-        const size = Math.random() * 48 + 32; // px
-        return [...prev, { id, left, size, popped: false }].slice(-12); // keep last 12
+        const left = Math.random() * 85 + 5;
+        const size = Math.random() * 56 + 40;
+        const hue = Math.random() * 360;
+        return [...prev, { id, left, size, hue, popped: false }].slice(-15);
       });
-    }, 900);
+    }, 800);
     return () => clearInterval(spawn);
   }, []);
 
-  // remove popped bubbles after animation
   useEffect(() => {
     const t = setInterval(() => {
       setBubbles((prev) => prev.filter((b) => !b.popped));
+      setAffirmations((prev) => prev.filter((a) => Date.now() - a.time < 2000));
     }, 1200);
     return () => clearInterval(t);
   }, []);
 
-  const pop = (id) => {
+  useEffect(() => {
+    const resetCombo = setTimeout(() => {
+      if (Date.now() - lastPop > 1500) setCombo(0);
+    }, 1500);
+    return () => clearTimeout(resetCombo);
+  }, [lastPop]);
+
+  const pop = (id, x, y) => {
     setBubbles((prev) => prev.map((b) => (b.id === id ? { ...b, popped: true } : b)));
-    setScore((s) => s + 1);
+    setScore((s) => s + 1 + combo);
+    setCombo((c) => c + 1);
+    setLastPop(Date.now());
+
+    if (Math.random() > 0.7) {
+      const msg = positiveMessages[Math.floor(Math.random() * positiveMessages.length)];
+      setAffirmations((prev) => [...prev, { id: Date.now(), msg, x, y, time: Date.now() }]);
+    }
   };
 
   return (
-    <div style={{ padding: 18, fontFamily: "Poppins, sans-serif" }}>
-      <h1 style={{ fontSize: 26 }}>Bubble Pop</h1>
-      <p style={{ color: "#555" }}>Tap bubbles to pop and watch your stress go away!</p>
-      <div style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 8 }}>
-        <div style={{ fontWeight: 700 }}>Score: {score}</div>
-        <button
-          className="btn btn-sm btn-outline-secondary"
-          onClick={() => {
-            setBubbles([]);
-            setScore(0);
-          }}
-        >
-          Reset
-        </button>
-      </div>
-
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "linear-gradient(180deg, #bfdbfe 0%, #dbeafe 50%, #e0f2fe 100%)",
+        padding: "40px 20px",
+        fontFamily: "'Inter', sans-serif",
+      }}
+    >
       <div
-        ref={containerRef}
         style={{
-          marginTop: 16,
-          height: 360,
-          borderRadius: 12,
-          background: "linear-gradient(180deg,#E6F7FF,#FFFFFF)",
-          position: "relative",
-          overflow: "hidden",
-          boxShadow: "inset 0 2px 8px rgba(0,0,0,0.03)",
+          maxWidth: 800,
+          margin: "0 auto",
+          background: "rgba(255, 255, 255, 0.85)",
+          borderRadius: 24,
+          boxShadow: "0 20px 60px rgba(0,0,0,0.1)",
+          padding: 40,
+          backdropFilter: "blur(10px)",
         }}
       >
-        {bubbles.map((b) => (
+        <div style={{ textAlign: "center", marginBottom: 24 }}>
+          <h1 style={{ fontSize: 36, fontWeight: 800, color: "#1f2937", marginBottom: 8 }}>
+            🫧 Stress Relief Bubbles
+          </h1>
+          <p style={{ color: "#6b7280", fontSize: 16 }}>Pop bubbles to release tension and feel lighter</p>
+        </div>
+
+        <div style={{ display: "flex", gap: 16, justifyContent: "center", marginBottom: 24 }}>
           <div
-            key={b.id}
-            onClick={() => pop(b.id)}
             style={{
-              position: "absolute",
-              left: `${b.left}%`,
-              bottom: b.popped ? "-40px" : "-10px",
-              width: b.size,
-              height: b.size,
-              borderRadius: "50%",
-              background: b.popped
-                ? "radial-gradient(circle at 30% 30%, #FFD6E0,#FF9AA2)"
-                : "radial-gradient(circle at 30% 30%, #D6ECFF,#89CFF0)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 18,
-              color: "#03435E",
-              transform: b.popped ? "scale(0)" : "translateY(-280px)",
-              transition: b.popped ? "transform 600ms ease, opacity 600ms" : "transform 6s linear",
-              opacity: b.popped ? 0 : 1,
-              cursor: "pointer",
-              boxShadow: "0 8px 20px rgba(2,6,23,0.06)",
+              background: "#eff6ff",
+              padding: "12px 24px",
+              borderRadius: 12,
+              border: "1px solid #dbeafe",
             }}
-            aria-hidden={false}
-          />
-        ))}
+          >
+            <div style={{ fontSize: 28, fontWeight: 800, color: "#3b82f6" }}>{score}</div>
+            <div style={{ fontSize: 12, color: "#6b7280", fontWeight: 600 }}>SCORE</div>
+          </div>
+          {combo > 1 && (
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              style={{
+                background: "#fef3c7",
+                padding: "12px 24px",
+                borderRadius: 12,
+                border: "1px solid #fde68a",
+              }}
+            >
+              <div style={{ fontSize: 28, fontWeight: 800, color: "#f59e0b" }}>🔥 {combo}x</div>
+              <div style={{ fontSize: 12, color: "#92400e", fontWeight: 600 }}>COMBO</div>
+            </motion.div>
+          )}
+        </div>
+
+        <div
+          style={{
+            height: 450,
+            borderRadius: 16,
+            background: "linear-gradient(180deg, rgba(191, 219, 254, 0.3), rgba(224, 242, 254, 0.3))",
+            position: "relative",
+            overflow: "hidden",
+            border: "2px solid rgba(147, 197, 253, 0.3)",
+          }}
+        >
+          {bubbles.map((b) => (
+            <motion.div
+              key={b.id}
+              onClick={(e) => pop(b.id, e.clientX, e.clientY)}
+              initial={{ bottom: -50 }}
+              animate={{
+                bottom: b.popped ? -50 : 500,
+                scale: b.popped ? 0 : 1,
+                opacity: b.popped ? 0 : 1,
+              }}
+              transition={{
+                bottom: { duration: 7, ease: "linear" },
+                scale: { duration: 0.3 },
+                opacity: { duration: 0.3 },
+              }}
+              style={{
+                position: "absolute",
+                left: `${b.left}%`,
+                width: b.size,
+                height: b.size,
+                borderRadius: "50%",
+                background: `radial-gradient(circle at 30% 30%, hsl(${b.hue}, 70%, 85%), hsl(${b.hue}, 60%, 70%))`,
+                cursor: "pointer",
+                boxShadow: "0 8px 24px rgba(0,0,0,0.1)",
+                border: "2px solid rgba(255, 255, 255, 0.5)",
+              }}
+            />
+          ))}
+
+          {affirmations.map((a) => (
+            <motion.div
+              key={a.id}
+              initial={{ opacity: 1, y: 0 }}
+              animate={{ opacity: 0, y: -50 }}
+              transition={{ duration: 2 }}
+              style={{
+                position: "absolute",
+                left: a.x - 100,
+                top: a.y - 50,
+                fontSize: 16,
+                fontWeight: 700,
+                color: "#10b981",
+                textShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                pointerEvents: "none",
+              }}
+            >
+              {a.msg}
+            </motion.div>
+          ))}
+        </div>
+
+        <div style={{ marginTop: 24, textAlign: "center" }}>
+          <button
+            onClick={() => {
+              setBubbles([]);
+              setScore(0);
+              setCombo(0);
+            }}
+            style={{
+              padding: "12px 32px",
+              borderRadius: 12,
+              border: "2px solid #e5e7eb",
+              background: "#fff",
+              color: "#6b7280",
+              fontWeight: 700,
+              cursor: "pointer",
+            }}
+          >
+            🔄 Reset
+          </button>
+        </div>
       </div>
     </div>
   );
 }
 
+
 // -------------------------------
-// 4) ColorCalm — simple drawing canvas
+// 4) Enhanced Color Calm
 // -------------------------------
 export function ColorCalm() {
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
   const [drawing, setDrawing] = useState(false);
-  const [color, setColor] = useState("#6EE7B7");
-  const [size, setSize] = useState(6);
+  const [color, setColor] = useState("#a78bfa");
+  const [size, setSize] = useState(8);
+  const [tool, setTool] = useState("brush");
+
+  const calmingColors = [
+    { color: "#a78bfa", name: "Lavender" },
+    { color: "#60a5fa", name: "Sky Blue" },
+    { color: "#34d399", name: "Mint" },
+    { color: "#fbbf24", name: "Sunshine" },
+    { color: "#f472b6", name: "Rose" },
+    { color: "#10b981", name: "Forest" },
+    { color: "#818cf8", name: "Violet" },
+    { color: "#f59e0b", name: "Amber" },
+  ];
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    canvas.width = 800;
-    canvas.height = 480;
-    canvas.style.width = "100%";
-    canvas.style.borderRadius = "12px";
+    canvas.width = 900;
+    canvas.height = 600;
     const ctx = canvas.getContext("2d");
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctx.strokeStyle = color;
     ctx.lineWidth = size;
+    
+    // Calming background
+    ctx.fillStyle = "#fafafa";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
     ctxRef.current = ctx;
 
-    // load saved image if available
     const saved = localStorage.getItem("colorcalm_image");
     if (saved) {
       const img = new Image();
       img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       img.src = saved;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (ctxRef.current) {
       ctxRef.current.strokeStyle = color;
       ctxRef.current.lineWidth = size;
+      ctxRef.current.globalCompositeOperation = tool === "eraser" ? "destination-out" : "source-over";
     }
-  }, [color, size]);
+  }, [color, size, tool]);
 
   const getPos = (e) => {
     const rect = canvasRef.current.getBoundingClientRect();
+    const scaleX = canvasRef.current.width / rect.width;
+    const scaleY = canvasRef.current.height / rect.height;
     return {
-      x: ((e.clientX || e.touches[0].clientX) - rect.left) * (canvasRef.current.width / rect.width),
-      y: ((e.clientY || e.touches[0].clientY) - rect.top) * (canvasRef.current.height / rect.height),
+      x: ((e.clientX || e.touches?.[0]?.clientX) - rect.left) * scaleX,
+      y: ((e.clientY || e.touches?.[0]?.clientY) - rect.top) * scaleY,
     };
   };
 
   const start = (e) => {
+    e.preventDefault();
     setDrawing(true);
     const { x, y } = getPos(e);
     ctxRef.current.beginPath();
@@ -384,6 +785,7 @@ export function ColorCalm() {
 
   const move = (e) => {
     if (!drawing) return;
+    e.preventDefault();
     const { x, y } = getPos(e);
     ctxRef.current.lineTo(x, y);
     ctxRef.current.stroke();
@@ -395,129 +797,448 @@ export function ColorCalm() {
   };
 
   const clear = () => {
-    const canvas = canvasRef.current;
-    ctxRef.current.clearRect(0, 0, canvas.width, canvas.height);
+    const ctx = ctxRef.current;
+    ctx.fillStyle = "#fafafa";
+    ctx.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height);
   };
 
   const save = () => {
     const data = canvasRef.current.toDataURL();
     localStorage.setItem("colorcalm_image", data);
-    alert("Saved to local storage — you can clear or paint more.");
+    
+    const link = document.createElement("a");
+    link.download = `mindful-art-${Date.now()}.png`;
+    link.href = data;
+    link.click();
   };
 
   return (
-    <div style={{ padding: 20, fontFamily: "Poppins, sans-serif" }}>
-      <h1 style={{ fontSize: 26 }}>Color Calm</h1>
-      <p style={{ color: "#555" }}>Paint freely. Use this as a mindful, creative break.</p>
-
-      <div style={{ display: "flex", gap: 10, marginTop: 12, alignItems: "center" }}>
-        <div style={{ display: "flex", gap: 8 }}>
-          {[
-            "#6EE7B7",
-            "#93C5FD",
-            "#FBCFE8",
-            "#FDE68A",
-            "#A78BFA",
-            "#FCA5A5",
-            "#111827",
-          ].map((c) => (
-            <button
-              key={c}
-              onClick={() => setColor(c)}
-              style={{ width: 28, height: 28, borderRadius: 6, background: c, border: color === c ? "2px solid #000" : "none" }}
-            />
-          ))}
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%)",
+        padding: "40px 20px",
+        fontFamily: "'Inter', sans-serif",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 1000,
+          margin: "0 auto",
+          background: "rgba(255, 255, 255, 0.95)",
+          borderRadius: 24,
+          boxShadow: "0 20px 60px rgba(0,0,0,0.1)",
+          padding: 40,
+        }}
+      >
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <h1 style={{ fontSize: 36, fontWeight: 800, color: "#1f2937", marginBottom: 8 }}>
+            🎨 Mindful Art Canvas
+          </h1>
+          <p style={{ color: "#6b7280", fontSize: 16 }}>
+            Express yourself freely. Let your creativity flow without judgment.
+          </p>
         </div>
 
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <label style={{ color: "#666" }}>Brush</label>
-          <input type="range" min={1} max={40} value={size} onChange={(e) => setSize(Number(e.target.value))} />
+        {/* Toolbar */}
+        <div
+          style={{
+            background: "#f9fafb",
+            padding: 20,
+            borderRadius: 16,
+            marginBottom: 24,
+            border: "1px solid #e5e7eb",
+          }}
+        >
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: "#6b7280", marginBottom: 12 }}>
+              COLORS
+            </div>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              {calmingColors.map((c) => (
+                <motion.button
+                  key={c.color}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => {
+                    setColor(c.color);
+                    setTool("brush");
+                  }}
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 12,
+                    background: c.color,
+                    border: color === c.color ? "3px solid #1f2937" : "2px solid #e5e7eb",
+                    cursor: "pointer",
+                    boxShadow: color === c.color ? `0 4px 12px ${c.color}80` : "0 2px 8px rgba(0,0,0,0.1)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#fff",
+                    fontWeight: 700,
+                  }}
+                  title={c.name}
+                >
+                  {color === c.color && "✓"}
+                </motion.button>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
+            <div style={{ flex: 1, minWidth: 200 }}>
+              <label style={{ fontSize: 14, fontWeight: 600, color: "#6b7280", marginBottom: 8, display: "block" }}>
+                BRUSH SIZE: {size}px
+              </label>
+              <input
+                type="range"
+                min={2}
+                max={60}
+                value={size}
+                onChange={(e) => setSize(Number(e.target.value))}
+                style={{ width: "100%", accentColor: "#667eea" }}
+              />
+            </div>
+
+            <div style={{ display: "flex", gap: 8 }}>
+              <button
+                onClick={() => setTool("brush")}
+                style={{
+                  padding: "10px 20px",
+                  borderRadius: 10,
+                  border: tool === "brush" ? "2px solid #667eea" : "2px solid #e5e7eb",
+                  background: tool === "brush" ? "#eff6ff" : "#fff",
+                  color: tool === "brush" ? "#667eea" : "#6b7280",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                🖌️ Brush
+              </button>
+              <button
+                onClick={() => setTool("eraser")}
+                style={{
+                  padding: "10px 20px",
+                  borderRadius: 10,
+                  border: tool === "eraser" ? "2px solid #667eea" : "2px solid #e5e7eb",
+                  background: tool === "eraser" ? "#eff6ff" : "#fff",
+                  color: tool === "eraser" ? "#667eea" : "#6b7280",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                🧹 Eraser
+              </button>
+            </div>
+
+            <div style={{ display: "flex", gap: 8 }}>
+              <button
+                onClick={clear}
+                style={{
+                  padding: "10px 20px",
+                  borderRadius: 10,
+                  border: "2px solid #e5e7eb",
+                  background: "#fff",
+                  color: "#6b7280",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                🗑️ Clear
+              </button>
+              <button
+                onClick={save}
+                style={{
+                  padding: "10px 20px",
+                  borderRadius: 10,
+                  border: "none",
+                  background: "linear-gradient(135deg, #10b981, #059669)",
+                  color: "#fff",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  boxShadow: "0 4px 12px rgba(16, 185, 129, 0.3)",
+                }}
+              >
+                💾 Save
+              </button>
+            </div>
+          </div>
         </div>
 
-        <button className="btn btn-outline-secondary" onClick={clear}>
-          Clear
-        </button>
-        <button className="btn btn-success" onClick={save}>
-          Save
-        </button>
+        {/* Canvas */}
+        <canvas
+          ref={canvasRef}
+          onMouseDown={start}
+          onMouseMove={move}
+          onMouseUp={end}
+          onMouseLeave={end}
+          onTouchStart={start}
+          onTouchMove={move}
+          onTouchEnd={end}
+          style={{
+            width: "100%",
+            borderRadius: 16,
+            border: "2px solid #e5e7eb",
+            cursor: tool === "eraser" ? "crosshair" : "url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSI4IiBmaWxsPSJ3aGl0ZSIgc3Ryb2tlPSJibGFjayIgc3Ryb2tlLXdpZHRoPSIyIi8+PC9zdmc+'), auto",
+            boxShadow: "inset 0 2px 8px rgba(0,0,0,0.05)",
+          }}
+        />
+
+        <div
+          style={{
+            marginTop: 16,
+            padding: 16,
+            background: "#dbeafe",
+            borderRadius: 12,
+            border: "1px solid #bfdbfe",
+            textAlign: "center",
+          }}
+        >
+          <p style={{ margin: 0, color: "#1e40af", fontSize: 14, lineHeight: 1.6 }}>
+            💡 <strong>Mindful Tip:</strong> Focus on the process, not the outcome. Each stroke is a moment of
+            presence. There's no right or wrong way to create.
+          </p>
+        </div>
       </div>
-
-      <canvas
-        ref={canvasRef}
-        onMouseDown={start}
-        onMouseMove={move}
-        onMouseUp={end}
-        onMouseLeave={end}
-        onTouchStart={start}
-        onTouchMove={move}
-        onTouchEnd={end}
-        style={{ marginTop: 12, width: "100%", border: "1px solid #E6EEF3" }}
-      />
     </div>
   );
 }
 
 // -------------------------------
-// 5) GratitudeJournal (full CRUD with localStorage)
+// 5) Enhanced Gratitude Journal
 // -------------------------------
 export function GratitudeJournal() {
   const [text, setText] = useState("");
   const [entries, setEntries] = useState(() => JSON.parse(localStorage.getItem("gratitude_entries") || "[]"));
+  const [mood, setMood] = useState("😊");
+
+  const moods = ["😊", "😌", "🥰", "✨", "🌟", "💚", "🙏"];
 
   useEffect(() => {
     localStorage.setItem("gratitude_entries", JSON.stringify(entries));
   }, [entries]);
 
   const add = () => {
-    if (!text.trim()) return alert("Write at least one short line — even one word helps.");
-    const newEntry = { id: Date.now(), text: text.trim(), when: new Date().toISOString() };
+    if (!text.trim()) {
+      alert("Please write something you're grateful for ❤️");
+      return;
+    }
+    const newEntry = {
+      id: Date.now(),
+      text: text.trim(),
+      mood,
+      when: new Date().toISOString(),
+    };
     setEntries((e) => [newEntry, ...e]);
     setText("");
+    setMood("😊");
   };
 
-  const remove = (id) => setEntries((e) => e.filter((x) => x.id !== id));
+  const remove = (id) => {
+    if (window.confirm("Remove this entry?")) {
+      setEntries((e) => e.filter((x) => x.id !== id));
+    }
+  };
 
   return (
-    <div style={{ padding: 20, fontFamily: "Poppins, sans-serif" }}>
-      <h1 style={{ fontSize: 26 }}>Gratitude Journal</h1>
-      <p style={{ color: "#555" }}>Write one short thing you’re grateful for and save it.</p>
-
-      <div style={{ marginTop: 12 }}>
-        <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="One thing I'm grateful for..."
-          style={{ width: "100%", minHeight: 80, padding: 8, borderRadius: 8 }}
-        />
-        <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
-          <button className="btn btn-primary" onClick={add}>
-            Save
-          </button>
-          <button className="btn btn-outline-secondary" onClick={() => setText("")}>Clear</button>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%)",
+        padding: "40px 20px",
+        fontFamily: "'Inter', sans-serif",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 700,
+          margin: "0 auto",
+          background: "rgba(255, 255, 255, 0.95)",
+          borderRadius: 24,
+          boxShadow: "0 20px 60px rgba(0,0,0,0.1)",
+          padding: 40,
+        }}
+      >
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <h1 style={{ fontSize: 36, fontWeight: 800, color: "#1f2937", marginBottom: 8 }}>
+            💛 Gratitude Journal
+          </h1>
+          <p style={{ color: "#6b7280", fontSize: 16 }}>
+            Cultivate positivity by noting what you're thankful for
+          </p>
         </div>
-      </div>
 
-      <div style={{ marginTop: 18 }}>
-        {entries.length === 0 ? (
-          <div style={{ color: "#777" }}>No entries yet — try saving something small.</div>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {entries.map((en) => (
-              <div key={en.id} style={{ background: "#fff", padding: 10, borderRadius: 8, boxShadow: "0 6px 18px rgba(2,6,23,0.04)" }}>
-                <div style={{ fontSize: 14, color: "#333" }}>{en.text}</div>
-                <div style={{ fontSize: 12, color: "#888", marginTop: 6 }}>{new Date(en.when).toLocaleString()}</div>
-                <div style={{ marginTop: 8 }}>
-                  <button className="btn btn-sm btn-outline-danger" onClick={() => remove(en.id)}>Delete</button>
-                </div>
-              </div>
-            ))}
+        {/* Input Section */}
+        <div
+          style={{
+            background: "linear-gradient(135deg, #fef3c7, #fef9c3)",
+            padding: 24,
+            borderRadius: 16,
+            marginBottom: 32,
+            border: "1px solid #fde68a",
+          }}
+        >
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ fontSize: 14, fontWeight: 600, color: "#92400e", marginBottom: 8, display: "block" }}>
+              HOW ARE YOU FEELING?
+            </label>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              {moods.map((m) => (
+                <button
+                  key={m}
+                  onClick={() => setMood(m)}
+                  style={{
+                    fontSize: 32,
+                    padding: 8,
+                    borderRadius: 12,
+                    border: mood === m ? "3px solid #f59e0b" : "2px solid #fde68a",
+                    background: mood === m ? "#fef3c7" : "#fff",
+                    cursor: "pointer",
+                    transform: mood === m ? "scale(1.1)" : "scale(1)",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  {m}
+                </button>
+              ))}
+            </div>
           </div>
-        )}
+
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ fontSize: 14, fontWeight: 600, color: "#92400e", marginBottom: 8, display: "block" }}>
+              I'M GRATEFUL FOR...
+            </label>
+            <textarea
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="Even the smallest thing matters... a warm cup of tea, a kind word, the morning sun..."
+              style={{
+                width: "100%",
+                minHeight: 100,
+                padding: 16,
+                borderRadius: 12,
+                border: "2px solid #fde68a",
+                fontSize: 15,
+                fontFamily: "'Inter', sans-serif",
+                resize: "vertical",
+                background: "#fff",
+              }}
+            />
+          </div>
+
+          <div style={{ display: "flex", gap: 12 }}>
+            <button
+              onClick={add}
+              style={{
+                flex: 1,
+                padding: "14px 24px",
+                borderRadius: 12,
+                border: "none",
+                background: "linear-gradient(135deg, #f59e0b, #d97706)",
+                color: "#fff",
+                fontWeight: 700,
+                fontSize: 16,
+                cursor: "pointer",
+                boxShadow: "0 4px 12px rgba(245, 158, 11, 0.3)",
+              }}
+            >
+              ✨ Save Entry
+            </button>
+            <button
+              onClick={() => setText("")}
+              style={{
+                padding: "14px 24px",
+                borderRadius: 12,
+                border: "2px solid #fde68a",
+                background: "#fff",
+                color: "#92400e",
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+
+        {/* Entries List */}
+        <div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: "#6b7280", marginBottom: 16, textTransform: "uppercase", letterSpacing: 1 }}>
+            Your Gratitude Collection ({entries.length})
+          </div>
+
+          {entries.length === 0 ? (
+            <div
+              style={{
+                textAlign: "center",
+                padding: 48,
+                background: "#f9fafb",
+                borderRadius: 16,
+                border: "2px dashed #e5e7eb",
+              }}
+            >
+              <div style={{ fontSize: 48, marginBottom: 12 }}>📝</div>
+              <p style={{ color: "#6b7280", margin: 0 }}>
+                Your gratitude journey starts here. Write your first entry above!
+              </p>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {entries.map((en) => (
+                <motion.div
+                  key={en.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  style={{
+                    background: "#fff",
+                    padding: 20,
+                    borderRadius: 16,
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+                    border: "1px solid #e5e7eb",
+                  }}
+                >
+                  <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
+                    <div style={{ fontSize: 32 }}>{en.mood}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 15, color: "#1f2937", lineHeight: 1.7, marginBottom: 8 }}>
+                        {en.text}
+                      </div>
+                      <div style={{ fontSize: 13, color: "#9ca3af" }}>
+                        {new Date(en.when).toLocaleDateString("en-US", {
+                          month: "long",
+                          day: "numeric",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => remove(en.id)}
+                    style={{
+                      padding: "8px 16px",
+                      borderRadius: 8,
+                      border: "1px solid #fecaca",
+                      background: "#fef2f2",
+                      color: "#dc2626",
+                      fontSize: 13,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                    }}
+                  >
+                    🗑️ Remove
+                  </button>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 }
-
 // -------------------------------
 // Enhanced Anxiety Spinner - Professional & Engaging
 // -------------------------------
@@ -873,16 +1594,23 @@ export function AnxietySpinner() {
   );
 }
 
+
 // -------------------------------
-// 7) WordRelax — build calming words from letters
+// 7) Enhanced Word Relax
 // -------------------------------
 export function WordRelax() {
-  const calmingWords = ["calm", "breathe", "peace", "soft", "rest", "gentle", "still", "quiet"];
-  const pool = shuffle((calmingWords[Math.floor(Math.random() * calmingWords.length)] || "calm").split("")).map((c, i) => ({ id: i + "-" + c + Math.random(), letter: c }));
+  const calmingWords = [
+    "calm", "breathe", "peace", "soft", "rest", "gentle",
+    "still", "quiet", "serene", "ease", "flow", "balance",
+  ];
 
-  const [letters, setLetters] = useState(pool);
+  const [targetWord] = useState(() => calmingWords[Math.floor(Math.random() * calmingWords.length)]);
+  const [letters, setLetters] = useState(() =>
+    shuffle(targetWord.split("")).map((c, i) => ({ id: i + "-" + c + Math.random(), letter: c, used: false }))
+  );
   const [built, setBuilt] = useState("");
   const [found, setFound] = useState([]);
+  const [hint, setHint] = useState(false);
 
   const addLetter = (idx) => {
     setBuilt((b) => b + letters[idx].letter);
@@ -893,7 +1621,6 @@ export function WordRelax() {
     if (!built) return;
     const last = built.slice(-1);
     setBuilt((b) => b.slice(0, -1));
-    // mark last unused (first matching used letter from end)
     for (let i = letters.length - 1; i >= 0; i--) {
       if (letters[i].letter === last && letters[i].used) {
         setLetters((ls) => ls.map((l, idx) => (idx === i ? { ...l, used: false } : l)));
@@ -903,72 +1630,245 @@ export function WordRelax() {
   };
 
   const submit = () => {
-    if (calmingWords.includes(built.toLowerCase())) {
-      if (!found.includes(built.toLowerCase())) setFound((f) => [...f, built.toLowerCase()]);
-      alert(`Nice — you formed "${built}"!`);
+    const word = built.toLowerCase();
+    if (calmingWords.includes(word)) {
+      if (!found.includes(word)) {
+        setFound((f) => [...f, word]);
+        setTimeout(() => {
+          alert(`Beautiful! "${word}" is a calming word. You're doing great! 🌟`);
+        }, 100);
+      }
       setBuilt("");
       setLetters((ls) => ls.map((l) => ({ ...l, used: false })));
     } else {
-      alert("Not recognized as a calming word — try another combination.");
+      alert("Not quite a calming word. Try rearranging the letters! 💭");
     }
   };
 
   const reset = () => {
-    const base = shuffle((calmingWords[Math.floor(Math.random() * calmingWords.length)]).split(""));
-    setLetters(base.map((c, i) => ({ id: i + "-" + c + Math.random(), letter: c })));
+    const newWord = calmingWords[Math.floor(Math.random() * calmingWords.length)];
+    setLetters(shuffle(newWord.split("")).map((c, i) => ({ id: i + "-" + c + Math.random(), letter: c, used: false })));
     setBuilt("");
     setFound([]);
+    setHint(false);
   };
 
   return (
-    <div style={{ padding: 20, fontFamily: "Poppins, sans-serif" }}>
-      <h1 style={{ fontSize: 26 }}>Word Relax</h1>
-      <p style={{ color: "#555" }}>Tap letters to build a calming word. Try to find words like "calm", "peace", or "rest".</p>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%)",
+        padding: "40px 20px",
+        fontFamily: "'Inter', sans-serif",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 600,
+          margin: "0 auto",
+          background: "rgba(255, 255, 255, 0.95)",
+          borderRadius: 24,
+          boxShadow: "0 20px 60px rgba(0,0,0,0.1)",
+          padding: 40,
+        }}
+      >
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <h1 style={{ fontSize: 36, fontWeight: 800, color: "#1f2937", marginBottom: 8 }}>
+            🔤 Calming Word Builder
+          </h1>
+          <p style={{ color: "#6b7280", fontSize: 16 }}>
+            Arrange letters to form peaceful, soothing words
+          </p>
+        </div>
 
-      <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap" }}>
-        {letters.map((l, i) => (
+        {/* Letters */}
+        <div
+          style={{
+            background: "#f9fafb",
+            padding: 24,
+            borderRadius: 16,
+            marginBottom: 24,
+            border: "1px solid #e5e7eb",
+          }}
+        >
+          <div style={{ fontSize: 14, fontWeight: 600, color: "#6b7280", marginBottom: 16 }}>
+            TAP LETTERS TO BUILD A WORD
+          </div>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
+            {letters.map((l, i) => (
+              <motion.button
+                key={l.id}
+                onClick={() => !l.used && addLetter(i)}
+                disabled={l.used}
+                whileHover={{ scale: l.used ? 1 : 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                style={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: 12,
+                  background: l.used ? "#e5e7eb" : "linear-gradient(135deg, #667eea, #764ba2)",
+                  border: "none",
+                  color: l.used ? "#9ca3af" : "#fff",
+                  fontSize: 24,
+                  fontWeight: 700,
+                  cursor: l.used ? "not-allowed" : "pointer",
+                  boxShadow: l.used ? "none" : "0 4px 12px rgba(102, 126, 234, 0.3)",
+                }}
+              >
+                {l.letter}
+              </motion.button>
+            ))}
+          </div>
+        </div>
+
+        {/* Built Word Display */}
+        <div
+          style={{
+            background: "linear-gradient(135deg, #eff6ff, #dbeafe)",
+            padding: 24,
+            borderRadius: 16,
+            marginBottom: 24,
+            border: "2px solid #bfdbfe",
+            textAlign: "center",
+          }}
+        >
+          <div style={{ fontSize: 14, fontWeight: 600, color: "#1e40af", marginBottom: 12 }}>
+            YOUR WORD
+          </div>
+          <div style={{ fontSize: 32, fontWeight: 800, color: "#1f2937", minHeight: 48, letterSpacing: 4 }}>
+            {built || "..."}
+          </div>
+        </div>
+
+        {/* Controls */}
+        <div style={{ display: "flex", gap: 12, marginBottom: 24 }}>
           <button
-            key={l.id}
-            onClick={() => !l.used && addLetter(i)}
-            disabled={l.used}
-            style={{ padding: "8px 12px", borderRadius: 8, background: l.used ? "#EDF2F7" : "#fff", border: "1px solid #E6EEF3", cursor: l.used ? "not-allowed" : "pointer" }}
+            onClick={submit}
+            disabled={!built}
+            style={{
+              flex: 1,
+              padding: "14px",
+              borderRadius: 12,
+              border: "none",
+              background: built ? "linear-gradient(135deg, #10b981, #059669)" : "#e5e7eb",
+              color: "#fff",
+              fontWeight: 700,
+              cursor: built ? "pointer" : "not-allowed",
+              boxShadow: built ? "0 4px 12px rgba(16, 185, 129, 0.3)" : "none",
+            }}
           >
-            {l.letter}
+            ✓ Submit
           </button>
-        ))}
-      </div>
-
-      <div style={{ marginTop: 12 }}>
-        <div style={{ minHeight: 36, fontSize: 18, fontWeight: 700 }}>{built || "(build a word)"}</div>
-        <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
-          <button className="btn btn-primary" onClick={submit} disabled={!built}>
-            Submit
+          <button
+            onClick={removeLast}
+            disabled={!built}
+            style={{
+              padding: "14px 24px",
+              borderRadius: 12,
+              border: "2px solid #e5e7eb",
+              background: "#fff",
+              color: "#6b7280",
+              fontWeight: 700,
+              cursor: built ? "pointer" : "not-allowed",
+            }}
+          >
+            ← Back
           </button>
-          <button className="btn btn-outline-secondary" onClick={removeLast} disabled={!built}>
-            Remove Last
-          </button>
-          <button className="btn btn-sm btn-outline-primary" onClick={reset}>
-            New Letters
+          <button
+            onClick={() => setHint(!hint)}
+            style={{
+              padding: "14px 24px",
+              borderRadius: 12,
+              border: "2px solid #fde68a",
+              background: hint ? "#fef3c7" : "#fff",
+              color: "#92400e",
+              fontWeight: 700,
+              cursor: "pointer",
+            }}
+          >
+            💡
           </button>
         </div>
-      </div>
 
-      <div style={{ marginTop: 14 }}>
-        <div style={{ fontSize: 14, fontWeight: 700 }}>Found</div>
-        <div style={{ marginTop: 6, color: "#333", display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {found.length === 0 ? <span style={{ color: "#777" }}>(none yet)</span> : found.map((f) => <span key={f} style={{ background: "#E6F4EA", padding: "6px 8px", borderRadius: 8 }}>{f}</span>)}
+        {hint && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            style={{
+              background: "#fef3c7",
+              padding: 16,
+              borderRadius: 12,
+              border: "1px solid #fde68a",
+              marginBottom: 24,
+              textAlign: "center",
+            }}
+          >
+            <div style={{ color: "#92400e", fontSize: 14 }}>
+              💭 <strong>Hint:</strong> The word has {targetWord.length} letters and brings{" "}
+              {targetWord === "calm" ? "stillness" : targetWord === "peace" ? "tranquility" : "serenity"}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Found Words */}
+        <div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: "#6b7280", marginBottom: 12 }}>
+            WORDS DISCOVERED ({found.length})
+          </div>
+          {found.length === 0 ? (
+            <div style={{ textAlign: "center", padding: 32, background: "#f9fafb", borderRadius: 12, color: "#9ca3af" }}>
+              No words found yet. Keep trying! 🌟
+            </div>
+          ) : (
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              {found.map((f) => (
+                <motion.div
+                  key={f}
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  style={{
+                    padding: "10px 20px",
+                    borderRadius: 20,
+                    background: "linear-gradient(135deg, #d1fae5, #a7f3d0)",
+                    border: "1px solid #6ee7b7",
+                    color: "#065f46",
+                    fontWeight: 700,
+                  }}
+                >
+                  ✨ {f}
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div style={{ marginTop: 24, textAlign: "center" }}>
+          <button
+            onClick={reset}
+            style={{
+              padding: "12px 32px",
+              borderRadius: 12,
+              border: "2px solid #e5e7eb",
+              background: "#fff",
+              color: "#6b7280",
+              fontWeight: 700,
+              cursor: "pointer",
+            }}
+          >
+            🔄 New Word
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
-// default export is optional — export a small landing helper if desired
-export default function MiniGamesBundle() {
+export default function EnhancedGamesBundle() {
   return (
     <div style={{ padding: 24 }}>
-      <h2 style={{ fontSize: 20 }}>Mini-Games Bundle</h2>
-      <p style={{ color: "#666" }}>Import any exported component directly into your routes (BreathingGame, MemoryMatch, BubblePop, ColorCalm, GratitudeJournal, AnxietySpinner, WordRelax).</p>
+      <h2>Enhanced Mental Wellness Games</h2>
+      <p>Import any component: BreathingGame, MemoryMatch, BubblePop, ColorCalm, GratitudeJournal, AnxietySpinner, WordRelax</p>
     </div>
   );
 }
+
