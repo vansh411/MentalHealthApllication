@@ -517,27 +517,7 @@ function Frontpage() {
 
         <Row className="g-4">
           {[
-            {
-              icon: "🌬️",
-              title: "Breathing Bubble",
-              text: "Guided breathing exercises for instant calm and stress relief",
-              onClick: () => navigate("/game-breathing"),
-              gradient: "linear-gradient(135deg, #a8edea15, #fed6e315)",
-            },
-            {
-              icon: "🫧",
-              title: "Bubble Pop",
-              text: "Pop colorful bubbles to release tension and anxiety",
-              onClick: () => navigate("/game-bubble"),
-              gradient: "linear-gradient(135deg, #fee2e215, #fad0c415)",
-            },
-            {
-              icon: "🎨",
-              title: "Color Calm",
-              text: "Therapeutic coloring to relax and express yourself",
-              onClick: () => navigate("/game-color"),
-              gradient: "linear-gradient(135deg, #fbc2eb15, #a6c1ee15)",
-            },
+            
             {
               icon: "🧠",
               title: "Memory Match",
