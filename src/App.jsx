@@ -12,10 +12,10 @@ import WhatsAppClone from "./pages/WhatsApp";
 
 // Games
 import {
-  BreathingGame,
+ 
   MemoryMatch,
-  BubblePop,
-  ColorCalm,
+ 
+  
   GratitudeJournal,
   AnxietySpinner,
   WordRelax,
@@ -65,10 +65,10 @@ function App() {
 
         {/* Games */}
         <Route path="/games" element={<div style={{ padding: 20 }}>Select a game from the menu.</div>} />
-        <Route path="/game-breathing" element={<BreathingGame />} />
+       
         <Route path="/game-memory" element={<MemoryMatch />} />
-        <Route path="/game-bubble" element={<BubblePop />} />
-        <Route path="/game-color" element={<ColorCalm />} />
+        
+        
         <Route path="/game-gratitude" element={<GratitudeJournal />} />
         <Route path="/game-spinner" element={<AnxietySpinner />} />
         <Route path="/game-word" element={<WordRelax />} />
