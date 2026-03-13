@@ -93,4 +93,3 @@ Mindcare/
  Disclaimer
 Mindcare is an educational project and is not a substitute for professional medical advice, diagnosis, or treatment. If you or someone you know is in crisis, please contact a qualified healthcare professional or your local emergency services.
 
-<p align="center">Made with  and care</p>
